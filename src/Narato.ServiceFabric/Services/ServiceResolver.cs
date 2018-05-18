@@ -27,3 +27,6 @@ namespace Narato.ServiceFabric.Services
         }
     }
 }
+
+
+//TEST github vstst connection
