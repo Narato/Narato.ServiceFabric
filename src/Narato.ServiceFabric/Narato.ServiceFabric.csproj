@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Authors>Narato</Authors>
+    <Description>A library with core functionality for Service Fabric applications.</Description>
   </PropertyGroup>
 
   <ItemGroup>
