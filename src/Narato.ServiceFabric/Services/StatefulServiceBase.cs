@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Fabric;
 using System.Threading;
 using System.Threading.Tasks;
+using Narato.ServiceFabric.ApplicationInsights;
 
 namespace Narato.ServiceFabric.Services
 {
@@ -42,6 +43,7 @@ namespace Narato.ServiceFabric.Services
 
         protected virtual async Task InitializeService()
         {
+            new ServiceMonitor().Start(Context);
         }
 
         protected virtual string GetConfigItem(string sectionName, string propertyName)

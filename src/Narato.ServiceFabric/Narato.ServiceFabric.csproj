@@ -2,17 +2,20 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Authors>Narato</Authors>
+    <Description>A library with core functionality for Service Fabric applications.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.5.1" />
+    <PackageReference Include="Microsoft.ApplicationInsights.PerfCounterCollector" Version="2.6.1" />
+    <PackageReference Include="Microsoft.ApplicationInsights.ServiceFabric.Native" Version="2.1.1-beta1" />
     <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.9.1" />
-    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="2.0.0" />
-    <PackageReference Include="Microsoft.ServiceFabric" Version="6.1.480" />
-    <PackageReference Include="Microsoft.ServiceFabric.AspNetCore.Kestrel" Version="3.0.480" />
-    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.0.480" />
-    <PackageReference Include="Microsoft.ServiceFabric.Services.Remoting" Version="3.0.480" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Fabric.MSBuild" Version="1.6.5" />
+    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.0.0" />
+    <PackageReference Include="Microsoft.ServiceFabric" Version="6.2.274" />
+    <PackageReference Include="Microsoft.ServiceFabric.AspNetCore.Kestrel" Version="3.1.274" />
+    <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.1.274" />
+    <PackageReference Include="Microsoft.ServiceFabric.Services.Remoting" Version="3.1.274" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Fabric.MSBuild" Version="1.6.6" />
     <PackageReference Include="Narato.ResponseMiddleware.Models" Version="2.0.1" />
     <PackageReference Include="Narato.ResponseMiddleware.Models.Legacy" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
