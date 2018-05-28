@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using Microsoft.WindowsAzure.Storage.Table;
 using Narato.ServiceFabric.Models.Interfaces;
 using Newtonsoft.Json;
 
 namespace Narato.ServiceFabric.Models
 {
-    [DataContract]
-    public class ModelBase : IModelBase
+    public class TableStorageModelBase : TableEntity, IModelBase
     {
-        public ModelBase()
+        public TableStorageModelBase()
         {
             EntityStatus = Models.EntityStatus.Active;
             StatusChangedAt = DateTime.UtcNow;
@@ -31,9 +31,12 @@ namespace Narato.ServiceFabric.Models
         [JsonProperty("statusChangedAt")]
         public DateTime StatusChangedAt { get; set; }
 
-        [DataMember] [JsonProperty("eTag")] public DateTime ETag { get; set; }
+        [DataMember]
+        [JsonProperty("eTag")]
+        public DateTime ETag { get; set; }
 
-        [DataMember] private string _key;
+        [DataMember]
+        private string _key;
 
         protected virtual string GetKey()
         {
@@ -45,6 +48,5 @@ namespace Narato.ServiceFabric.Models
             get { return GetKey(); }
             set { _key = value; }
         }
-
     }
 }
