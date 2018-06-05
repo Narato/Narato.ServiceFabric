@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Narato.ServiceFabric.Models.Interfaces;
+using Narato.ServiceFabric.Models;
 
 namespace Narato.ServiceFabric.Persistence
 {
     public interface IPersistenceProvider<T>
-        where T : IModelBase, new()
+        where T : ModelBase, new()
     {
         Task PersistAsync(T model);
         Task<T> RetrieveAsync(string key);

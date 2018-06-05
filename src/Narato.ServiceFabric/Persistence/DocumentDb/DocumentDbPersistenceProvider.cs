@@ -73,6 +73,7 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
         {
             throw new System.NotImplementedException();
         }
+
         public async Task DeleteAllAsync()
         {
             var queryOptions = new FeedOptions { MaxItemCount = -1 };

@@ -1,52 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Narato.ServiceFabric.Models;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Narato.ServiceFabric.Persistence.TableStorage
 {
-    public class TableStoragePersistenceProvider<T> : IHistoryProvider<T>, IPersistenceProvider<T> where T : TableStorageModelBase, new()
+    public class TableStoragePersistenceProvider<T> : IHistoryPersistenceProvider<T> where T : TableEntity, new()
     {
-        protected readonly TableStorage _tableStorage;
+        protected readonly TableStorage TableStorage;
 
         public TableStoragePersistenceProvider(string cloudStorageConnectionString, string tableName)
         {
-            _tableStorage = new TableStorage(cloudStorageConnectionString, tableName);
+            TableStorage = new TableStorage(cloudStorageConnectionString, tableName);
         }
 
-        public async Task PersistAsync(T model)
+        public async Task PersistAsync(TableEntity tableEntity)
         {
-            await _tableStorage.PersistAsync(model);
+            await TableStorage.PersistAsync(tableEntity);
         }
 
         public async Task<T> RetrieveAsync(string partitionKey, string rowKey)
         {
-            var result = await _tableStorage.GetSingleEntity<T>(partitionKey, rowKey);
+            var result = await TableStorage.GetSingleEntity<T>(partitionKey, rowKey);
             return result;
         }
 
-        public Task RetrieveHistoryAsync(string key)
+        public async Task<IEnumerable<T>> RetrieveHistoryAsync(string key)
         {
-            throw new NotImplementedException();
+            var history = await TableStorage.GetAllEntityHistory<T>(key);
+
+            return history;
         }
 
-
-        //Following will never be implemented for the event sourcing provider TODO: create new interface?
-        public Task DeleteAsync(string key)
+        public async Task<IEnumerable<T>> RetrieveHistoryBeforeDateAsync(string partitionKey, DateTime date)
         {
-            throw new NotImplementedException();
+            var history = await TableStorage.GetEntityHistoryBeforeDate<T>(partitionKey, date);
+
+            return history;
         }
-
-        public Task DeleteAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<T>> RetrieveAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-
     }
 }

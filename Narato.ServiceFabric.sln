@@ -5,6 +5,10 @@ VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Narato.ServiceFabric", "src\Narato.ServiceFabric\Narato.ServiceFabric.csproj", "{E0B0EF80-E749-4FB3-A369-6F46CB0B0B9F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Narato.ServiceFabric.Tests", "Narato.ServiceFabric.Test\Narato.ServiceFabric.Tests.csproj", "{5A88784E-08D5-4918-ABC1-B870FD7E1251}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{1E7EE96F-BB3A-4636-8866-292C94F70BE7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{E0B0EF80-E749-4FB3-A369-6F46CB0B0B9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E0B0EF80-E749-4FB3-A369-6F46CB0B0B9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0B0EF80-E749-4FB3-A369-6F46CB0B0B9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A88784E-08D5-4918-ABC1-B870FD7E1251}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A88784E-08D5-4918-ABC1-B870FD7E1251}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A88784E-08D5-4918-ABC1-B870FD7E1251}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A88784E-08D5-4918-ABC1-B870FD7E1251}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E7EE96F-BB3A-4636-8866-292C94F70BE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E7EE96F-BB3A-4636-8866-292C94F70BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E7EE96F-BB3A-4636-8866-292C94F70BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E7EE96F-BB3A-4636-8866-292C94F70BE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

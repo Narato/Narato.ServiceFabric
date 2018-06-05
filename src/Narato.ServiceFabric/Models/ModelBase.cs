@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using Narato.ServiceFabric.Models.Interfaces;
 using Newtonsoft.Json;
 
 namespace Narato.ServiceFabric.Models
 {
     [DataContract]
-    public class ModelBase : IModelBase
+    public class ModelBase
     {
         public ModelBase()
         {
@@ -31,9 +30,12 @@ namespace Narato.ServiceFabric.Models
         [JsonProperty("statusChangedAt")]
         public DateTime StatusChangedAt { get; set; }
 
-        [DataMember] [JsonProperty("eTag")] public DateTime ETag { get; set; }
+        [DataMember]
+        [JsonProperty("eTag")]
+        public string ETag { get; set; }
 
-        [DataMember] private string _key;
+        [DataMember]
+        private string _key;
 
         protected virtual string GetKey()
         {
