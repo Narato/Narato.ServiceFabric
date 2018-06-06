@@ -44,7 +44,6 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
         {
             var queryOptions = new FeedOptions { MaxItemCount = -1 };
 
-
             var result = DocDbDatabase.Client
                 .CreateDocumentQuery<PersistedModel<T>>(UriFactory.CreateDocumentCollectionUri(_db.DatabaseName,
                     _db.CollectionName), queryOptions)

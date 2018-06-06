@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using JsonDiffPatch;
+using Narato.ServiceFabric.Helpers;
 using Narato.ServiceFabric.Models;
 using Narato.ServiceFabric.Persistence;
 using Narato.StringExtensions;
@@ -64,6 +65,7 @@ namespace Narato.ServiceFabric.Services.EventSourcing
             var existingEntity = await base.Get(key);
 
             await base.Delete(key);
+            
             existingEntity.EntityStatus = EntityStatus.Deleted;
             await EventSourcingDeleteRecord(existingEntity, _softDeleteEnabled);
         }
@@ -78,6 +80,7 @@ namespace Narato.ServiceFabric.Services.EventSourcing
             return await base.GetAll();
         }
 
+        //Gets the entity from the table storage
         private TModel GetLatestEntityVersion(string key)
         {
             var existingTableEntity = _historyPersistenceProvider.RetrieveHistoryBeforeDateAsync(key, DateTime.Now);
@@ -126,7 +129,7 @@ namespace Narato.ServiceFabric.Services.EventSourcing
         private async Task PersistEventSourcingRecord(string partitionKey, PatchDocument patchDocument, TModel model)
         {
             EventSourcingTableStorageEntity eventSourcingEntity = new EventSourcingTableStorageEntity();
-            eventSourcingEntity.Operations = patchDocument.Operations.ToJson(); //TODO: operations komen nog niet goed door.
+            eventSourcingEntity.Operations = patchDocument.ToString();
             eventSourcingEntity.PartitionKey = partitionKey.Replace("/", "");
             eventSourcingEntity.Json = model.ToJson();
             eventSourcingEntity.ETag = model.ETag;
@@ -136,28 +139,9 @@ namespace Narato.ServiceFabric.Services.EventSourcing
 
         private void SetETag(TModel modelToUpdate)
         {
-            //Create the hash with an empty ETag so it doesn't alter with the result.
+            //Create the hash with an empty ETag so it doesn't interfere with the result.
             modelToUpdate.ETag = "";
-            modelToUpdate.ETag = CreateMD5(modelToUpdate.ToJson());
-        }
-
-        private static string CreateMD5(string input)
-        {
-            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
-            {
-                byte[] inputBytes = Encoding.ASCII.GetBytes(input);
-                byte[] hashBytes = md5.ComputeHash(inputBytes);
-
-                // Convert the byte array to hexadecimal string
-                StringBuilder sb = new StringBuilder();
-
-                foreach (var hashByte in hashBytes)
-                {
-                    sb.Append(hashByte.ToString("X2"));
-                }
-
-                return sb.ToString();
-            }
+            modelToUpdate.ETag = HashHelper.CreateMD5(modelToUpdate.ToJson());
         }
     }
 }

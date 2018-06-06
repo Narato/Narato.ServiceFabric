@@ -1,10 +1,10 @@
 ﻿using System.Fabric;
+using Narato.ServiceFabric.Integrationtests.EventSourcing.Models;
 using Narato.ServiceFabric.Models;
 using Narato.ServiceFabric.Persistence;
 using Narato.ServiceFabric.Services.EventSourcing;
-using Narato.ServiceFabric.Tests.EventSourcing.Models;
 
-namespace Narato.ServiceFabric.Tests.EventSourcing.Wrappers
+namespace Narato.ServiceFabric.Integrationtests.EventSourcing.Wrappers
 {
     public class ServiceWrapper : StatelessCrudServiceEventSourcingBase<DummyModel>
     {
