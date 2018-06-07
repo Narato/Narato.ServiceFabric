@@ -65,7 +65,7 @@ namespace Narato.ServiceFabric.Persistence.TableStorage
         public async Task<IEnumerable<T>> GetEntityHistoryBeforeDate<T>(string partitionKey, DateTime date) where T : ITableEntity, new()
         {
             string partitionFilter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey);
-            string dateFilter = TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.LessThanOrEqual, date);
+            string dateFilter = TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.LessThanOrEqual, new DateTimeOffset(date.ToUniversalTime()));
 
             TableContinuationToken token = null;
             TableQuery<T> query = new TableQuery<T>().Where(TableQuery.CombineFilters(partitionFilter, TableOperators.And, dateFilter));

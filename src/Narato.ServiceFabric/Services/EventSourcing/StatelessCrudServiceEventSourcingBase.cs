@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using JsonDiffPatch;
+using Narato.ResponseMiddleware.Models.Exceptions;
 using Narato.ServiceFabric.Helpers;
 using Narato.ServiceFabric.Models;
 using Narato.ServiceFabric.Persistence;
@@ -18,16 +19,18 @@ namespace Narato.ServiceFabric.Services.EventSourcing
         where TModel : ModelBase, new()
     {
         private readonly IHistoryPersistenceProvider<EventSourcingTableStorageEntity> _historyPersistenceProvider;
+        private readonly IPersistenceProvider<TModel> _dataPersistenceProvider;
         private readonly bool _softDeleteEnabled;
 
         protected StatelessCrudServiceEventSourcingBase(StatelessServiceContext serviceContext, IHistoryPersistenceProvider<EventSourcingTableStorageEntity> historyPersistenceProvider, IPersistenceProvider<TModel> dataPersistenceProvider, bool softDeleteEnabled) 
             : base(serviceContext, dataPersistenceProvider, softDeleteEnabled)
         {
             _historyPersistenceProvider = historyPersistenceProvider;
+            _dataPersistenceProvider = dataPersistenceProvider;
             _softDeleteEnabled = softDeleteEnabled;
         }
 
-        public new virtual async Task<TModel> Create(TModel modelToCreate)
+        public new virtual async Task<TModel> CreateAsync(TModel modelToCreate)
         {
             TModel newModel = modelToCreate;
 
@@ -36,57 +39,69 @@ namespace Narato.ServiceFabric.Services.EventSourcing
 
             if (newModel != null)
             {
-                await EventSourcingCreateRecord(newModel);
+                await EventSourcingCreateRecordAsync(newModel);
             }
 
             return newModel;
         }
 
-        public new virtual async Task<TModel> Update(TModel modelToUpdate)
+        public new virtual async Task<TModel> UpdateAsync(TModel modelToUpdate)
         {
             //Get the latest entity from the table storage.
-            var existingEntity = GetLatestEntityVersion(modelToUpdate.Key);
+            var existingEntity = await GetLatestEntityVersionAsync(modelToUpdate.Key);
 
-            //When doing a patch, the last one wins since we are only updating a part of the object and probably do not have access to the etag
-            //to detect a patch, check the e-tag for a null value
+            //When doing a patch, the last one wins since we are only updating a part of the object and probably do not have access to the etag.
+            //To detect a patch operation, check the e-tag for a null value
             if (existingEntity.ETag != null && existingEntity.ETag != modelToUpdate.ETag)
                 throw new Exception("Someone has already updated the object you are trying to save. We cannot continue with the save");
 
             SetETag(modelToUpdate);
             var updatedModel = await base.Update(modelToUpdate);
 
-            await EventSourcingUpdateRecord(existingEntity, modelToUpdate);
+            await EventSourcingUpdateRecordAsync(existingEntity, modelToUpdate);
 
             return updatedModel;
         }
 
-        public new virtual async Task Delete(string key)
+        public new virtual async Task DeleteAsync(string key)
         {
             var existingEntity = await base.Get(key);
 
-            await base.Delete(key);
+            if (_softDeleteEnabled)
+            {
+                existingEntity.EntityStatus = EntityStatus.Deleted;
+                existingEntity.StatusChangedAt = DateTime.UtcNow;
+                SetETag(existingEntity);
+
+                await _dataPersistenceProvider.PersistAsync(existingEntity);
+            }
+            else
+            {
+                await _dataPersistenceProvider.DeleteAsync(key);
+            }
+
+            await EventSourcingDeleteRecordAsync(existingEntity, _softDeleteEnabled);
+        }        
+
+        /// <summary>
+        /// Returns the entity from the eventSource DB that matches the specific date or the one closest to (before) it
+        /// </summary>
+        public virtual async Task<TModel> GetByDateAsync(string key, DateTime date)
+        {
+            var existingTableEntity = await _historyPersistenceProvider.RetrieveHistoryBeforeDateAsync(key, date);
+            var entity = existingTableEntity.FirstOrDefault();
             
-            existingEntity.EntityStatus = EntityStatus.Deleted;
-            await EventSourcingDeleteRecord(existingEntity, _softDeleteEnabled);
-        }
-
-        public new virtual async Task<TModel> Get(string key)
-        {
-            return await base.Get(key);
-        }
-
-        public new virtual async Task<List<TModel>> GetAll()
-        {
-            return await base.GetAll();
-        }
-
-        //Gets the entity from the table storage
-        private TModel GetLatestEntityVersion(string key)
-        {
-            var existingTableEntity = _historyPersistenceProvider.RetrieveHistoryBeforeDateAsync(key, DateTime.Now);
-            var entity = existingTableEntity.Result.FirstOrDefault();
+            if (entity == null)
+                throw new EntityNotFoundException("ENF", $"Entity with key '{key}' was not found with a timestamp on or before the given datetime '{date}'.");
+            
             var existingEntity = JsonConvert.DeserializeObject<TModel>(entity?.Json);
             return existingEntity;
+        }
+        
+        //Gets the entity from the table storage
+        private async Task<TModel> GetLatestEntityVersionAsync(string key)
+        {
+            return await GetByDateAsync(key, DateTime.Now);
         }
 
         private PatchDocument CalculateJsonDiff(string existingObject, string newObject)
@@ -96,41 +111,43 @@ namespace Narato.ServiceFabric.Services.EventSourcing
             return new JsonDiffer().Diff(existing, newOne, false);
         }
 
-        private async Task EventSourcingCreateRecord(TModel newModel)
+        private async Task EventSourcingCreateRecordAsync(TModel newModel)
         {
             var patchDocument = CalculateJsonDiff("".ToJson(), newModel.ToJson());
-            await PersistEventSourcingRecord(newModel.Key, patchDocument, newModel);
+            await PersistEventSourcingRecordAsync(newModel.Key, patchDocument, newModel);
         }
 
-        private async Task EventSourcingUpdateRecord(TModel existingModel, TModel newModel)
+        private async Task EventSourcingUpdateRecordAsync(TModel existingModel, TModel newModel)
         {
             PatchDocument patchDocument = CalculateJsonDiff(existingModel.ToJson(), newModel.ToJson());
-            await PersistEventSourcingRecord(newModel.Key, patchDocument, newModel);
+            await PersistEventSourcingRecordAsync(newModel.Key, patchDocument, newModel);
         }
 
-        private async Task EventSourcingDeleteRecord(TModel existingModel, bool isSoftDelete)
+        private async Task EventSourcingDeleteRecordAsync(TModel modelToDelete, bool isSoftDelete)
         {
             PatchDocument patchDocument;
 
             if (isSoftDelete)
             {
-                existingModel.EntityStatus = EntityStatus.Deleted;
-                patchDocument = CalculateJsonDiff(existingModel.ToJson(), existingModel.ToJson());
+                var tmpJsonModel =  modelToDelete.ToJson();
+                
+                modelToDelete.EntityStatus = EntityStatus.Deleted;
+                patchDocument = CalculateJsonDiff(tmpJsonModel, modelToDelete.ToJson());
             }
             else
             {
-                existingModel.EntityStatus = EntityStatus.Deleted;
-                patchDocument = CalculateJsonDiff(existingModel.ToJson(), "".ToJson());
+                modelToDelete.EntityStatus = EntityStatus.Deleted;
+                patchDocument = CalculateJsonDiff(modelToDelete.ToJson(), "".ToJson());
             }
 
-            await PersistEventSourcingRecord(existingModel.Key, patchDocument, existingModel);
+            await PersistEventSourcingRecordAsync(modelToDelete.Key, patchDocument, modelToDelete);
         }
 
-        private async Task PersistEventSourcingRecord(string partitionKey, PatchDocument patchDocument, TModel model)
+        private async Task PersistEventSourcingRecordAsync(string partitionKey, PatchDocument patchDocument, TModel model)
         {
             EventSourcingTableStorageEntity eventSourcingEntity = new EventSourcingTableStorageEntity();
             eventSourcingEntity.Operations = patchDocument.ToString();
-            eventSourcingEntity.PartitionKey = partitionKey.Replace("/", "");
+            eventSourcingEntity.PartitionKey = partitionKey.Replace("/", ""); //Warning: Some characters are not allowed in the paritionkey
             eventSourcingEntity.Json = model.ToJson();
             eventSourcingEntity.ETag = model.ETag;
 
@@ -139,7 +156,7 @@ namespace Narato.ServiceFabric.Services.EventSourcing
 
         private void SetETag(TModel modelToUpdate)
         {
-            //Create the hash with an empty ETag so it doesn't interfere with the result.
+            //Create the hash with an empty ETag so the eTag doesn't interfere with the hash result.
             modelToUpdate.ETag = "";
             modelToUpdate.ETag = HashHelper.CreateMD5(modelToUpdate.ToJson());
         }

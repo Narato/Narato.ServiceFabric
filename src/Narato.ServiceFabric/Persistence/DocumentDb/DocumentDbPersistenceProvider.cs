@@ -69,8 +69,9 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
 
 
         public async Task DeleteAsync(string key)
-        {
-            throw new System.NotImplementedException();
+        {           
+            var document = await RetrieveInternalAsync(key);
+            await DocDbDatabase.Client.DeleteDocumentAsync(document.Self);
         }
 
         public async Task DeleteAllAsync()
@@ -81,12 +82,12 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
                     _db.CollectionName), queryOptions)
                 .Where(c => c.Type == typeof(T).Name)
                 .AsEnumerable().ToList();
+            
             foreach (var timesheet in result)
             {
                 await DocDbDatabase.Client.DeleteDocumentAsync(
                     new Uri(_db.EndPoint.Replace(":443", "") + timesheet.Self));
             }
         }
-
     }
 }

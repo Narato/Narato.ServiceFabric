@@ -1,4 +1,5 @@
 ﻿using System;
+using Narato.ResponseMiddleware.Models.Exceptions;
 using Narato.ServiceFabric.Integrationtests.EventSourcing.Models;
 using Narato.ServiceFabric.Integrationtests.EventSourcing.Wrappers;
 using Narato.ServiceFabric.Integrationtests.MockHelpers;
@@ -12,21 +13,21 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
     
     public class EventSourcingTests
     {
-        //private TransactionScope scope;
+        
+        /**************************************************************
+         * WARNING! These are integration tests and will write data to the
+         * databases configured in the GetService method. Be carefull not
+         * to run these in a production environment!!
+         **************************************************************/
 
-        //[SetUp]
-        //public void SetUp()
-        //{
-        //    scope = new TransactionScope();
-
-        //}
-
-        //[TearDown]
-        //public void TearDown()
-        //{
-        //    scope.Dispose();
-        //}
-
+        
+        private ServiceWrapper _service;
+        
+        public EventSourcingTests()
+        {
+            _service = GetService();
+        }
+        
         [Fact]
         public async void InsertModel()
         {
@@ -34,12 +35,11 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
 
             DummyModel dummy = new DummyModel();
             dummy.Key = "Nieuw model";
-            dummy.ETag = new DateTime(2018, 6, 4, 16, 59, 6).ToString(); //DateTime.Now;
             dummy.EntityStatus = EntityStatus.Active;
             dummy.Name = "New";
             dummy.Inner.InnerName = "newInner";
 
-            var createdDummy = await service.Create(dummy);
+            var createdDummy = await service.CreateAsync(dummy);
 
             Assert.NotEqual(null, createdDummy);
         }
@@ -52,13 +52,41 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
             dummy.Name = "updated";
             dummy.Inner.InnerName = "UpdatedInner";
 
-            var updatedDummy = await service.Update(dummy);
+            var updatedDummy = await service.UpdateAsync(dummy);
 
 
             Assert.NotEqual(null, updatedDummy);
         }
+        
+        [Fact]
+        public async void GetInitialModel()
+        {      
+            //TODO: only get when not deleted
+            //var historyModel = _service.GetByDateAsync("Nieuw model", DateTime.Now.AddMinutes(-1));
+            var historyModel = await _service.GetByDateAsync("Nieuw model", new DateTime(2018, 6, 7, 10, 48, 45));
 
-        private static ServiceWrapper GetService()
+            Assert.NotEqual(null, historyModel);
+        }
+        
+        [Fact]
+        public async void SoftDeleteModel()
+        {
+            await _service.DeleteAsync("Nieuw model");
+
+            var model = await _service.Get("Nieuw model");
+            Assert.Equal(EntityStatus.Deleted, model.EntityStatus);
+        }
+        
+        [Fact]
+        public async void HardDeleteModel()
+        {
+            _service = GetService(false);
+            await _service.DeleteAsync("Nieuw model");
+
+            await Assert.ThrowsAsync<EntityNotFoundException>(() =>  _service.Get("Nieuw model"));
+        }
+
+        private static ServiceWrapper GetService(bool softdeleteEnabled = true)
         {
             ServiceWrapper service =
                 new ServiceWrapper(
@@ -71,12 +99,8 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
                         "NexusDB",
                         "NexusCore",
                         ""),
-                    false);
+                    softdeleteEnabled);
             return service;
         }
     }
-
-    
-
-    
 }
