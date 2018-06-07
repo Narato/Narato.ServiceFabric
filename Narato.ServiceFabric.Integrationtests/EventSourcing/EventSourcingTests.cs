@@ -48,7 +48,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         public async void UpdateModel()
         {
             var service = GetService();
-            var dummy = await service.Get("Nieuw model");
+            var dummy = await service.GetAsync("Nieuw model");
             dummy.Name = "updated";
             dummy.Inner.InnerName = "UpdatedInner";
 
@@ -61,8 +61,6 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         [Fact]
         public async void GetInitialModel()
         {      
-            //TODO: only get when not deleted
-            //var historyModel = _service.GetByDateAsync("Nieuw model", DateTime.Now.AddMinutes(-1));
             var historyModel = await _service.GetByDateAsync("Nieuw model", new DateTime(2018, 6, 7, 10, 48, 45));
 
             Assert.NotEqual(null, historyModel);
@@ -73,7 +71,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         {
             await _service.DeleteAsync("Nieuw model");
 
-            var model = await _service.Get("Nieuw model");
+            var model = await _service.GetAsync("Nieuw model");
             Assert.Equal(EntityStatus.Deleted, model.EntityStatus);
         }
         
@@ -83,7 +81,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
             _service = GetService(false);
             await _service.DeleteAsync("Nieuw model");
 
-            await Assert.ThrowsAsync<EntityNotFoundException>(() =>  _service.Get("Nieuw model"));
+            await Assert.ThrowsAsync<EntityNotFoundException>(() =>  _service.GetAsync("Nieuw model"));
         }
 
         private static ServiceWrapper GetService(bool softdeleteEnabled = true)

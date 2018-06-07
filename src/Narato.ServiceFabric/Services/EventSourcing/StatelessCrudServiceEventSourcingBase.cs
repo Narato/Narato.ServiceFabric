@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using JsonDiffPatch;
 using Narato.ResponseMiddleware.Models.Exceptions;
@@ -32,10 +30,8 @@ namespace Narato.ServiceFabric.Services.EventSourcing
 
         public new virtual async Task<TModel> CreateAsync(TModel modelToCreate)
         {
-            TModel newModel = modelToCreate;
-
             SetETag(modelToCreate);
-            newModel = await base.Create(modelToCreate);
+            var newModel = await base.CreateAsync(modelToCreate);
 
             if (newModel != null)
             {
@@ -56,7 +52,7 @@ namespace Narato.ServiceFabric.Services.EventSourcing
                 throw new Exception("Someone has already updated the object you are trying to save. We cannot continue with the save");
 
             SetETag(modelToUpdate);
-            var updatedModel = await base.Update(modelToUpdate);
+            var updatedModel = await base.UpdateAsync(modelToUpdate);
 
             await EventSourcingUpdateRecordAsync(existingEntity, modelToUpdate);
 
@@ -65,7 +61,7 @@ namespace Narato.ServiceFabric.Services.EventSourcing
 
         public new virtual async Task DeleteAsync(string key)
         {
-            var existingEntity = await base.Get(key);
+            var existingEntity = await GetAsync(key);
 
             if (_softDeleteEnabled)
             {
@@ -94,7 +90,8 @@ namespace Narato.ServiceFabric.Services.EventSourcing
             if (entity == null)
                 throw new EntityNotFoundException("ENF", $"Entity with key '{key}' was not found with a timestamp on or before the given datetime '{date}'.");
             
-            var existingEntity = JsonConvert.DeserializeObject<TModel>(entity?.Json);
+            var existingEntity = JsonConvert.DeserializeObject<TModel>(entity.Json);
+            
             return existingEntity;
         }
         
