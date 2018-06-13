@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Narato.ResponseMiddleware.Models.Exceptions;
 using Narato.ServiceFabric.Integrationtests.EventSourcing.Models;
 using Narato.ServiceFabric.Integrationtests.EventSourcing.Wrappers;
@@ -31,37 +32,37 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         [Fact]
         public async void InsertModel()
         {
-            var service = GetService();
-
             DummyModel dummy = new DummyModel();
             dummy.Key = "Nieuw model";
             dummy.EntityStatus = EntityStatus.Active;
             dummy.Name = "New";
             dummy.Inner.InnerName = "newInner";
 
-            var createdDummy = await service.CreateAsync(dummy);
-
+            var createdDummy = await _service.CreateAsync(dummy);
+            var history = await _service.GetHistoryAsync(dummy.Key);
+            
+            Assert.Equal(1, history.Count());
             Assert.NotEqual(null, createdDummy);
         }
 
         [Fact]
         public async void UpdateModel()
         {
-            var service = GetService();
-            var dummy = await service.GetAsync("Nieuw model");
+            var dummy = await _service.GetAsync("Nieuw model");
             dummy.Name = "updated";
             dummy.Inner.InnerName = "UpdatedInner";
 
-            var updatedDummy = await service.UpdateAsync(dummy);
-
-
+            var updatedDummy = await _service.UpdateAsync(dummy);
+            var history = await _service.GetHistoryAsync(dummy.Key);
+            
+            Assert.Equal(2, history.Count());
             Assert.NotEqual(null, updatedDummy);
         }
         
         [Fact]
         public async void GetInitialModel()
         {      
-            var historyModel = await _service.GetByDateAsync("Nieuw model", new DateTime(2018, 6, 7, 10, 48, 45));
+            var historyModel = await _service.GetHistoryBeforeOrOnDateAsync("Nieuw model", new DateTime(2018, 6, 13, 10, 48, 45));
 
             Assert.NotEqual(null, historyModel);
         }
@@ -72,6 +73,9 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
             await _service.DeleteAsync("Nieuw model");
 
             var model = await _service.GetAsync("Nieuw model");
+            var history = await _service.GetHistoryAsync("Nieuw model");
+            
+            Assert.True(history.Count() > 1);
             Assert.Equal(EntityStatus.Deleted, model.EntityStatus);
         }
         
@@ -80,7 +84,9 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         {
             _service = GetService(false);
             await _service.DeleteAsync("Nieuw model");
-
+            var history = await _service.GetHistoryAsync("Nieuw model");
+            
+            Assert.True(history.Count() > 1);
             await Assert.ThrowsAsync<EntityNotFoundException>(() =>  _service.GetAsync("Nieuw model"));
         }
 
@@ -89,13 +95,12 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
             ServiceWrapper service =
                 new ServiceWrapper(
                     MockStatelessServiceContextFactory.Default,
-                    new TableStoragePersistenceProvider<EventSourcingTableStorageEntity>(
-                        "DefaultEndpointsProtocol=https;AccountName=nexuseventstorage;AccountKey=eiY0BC0pEQHOatyrO4vuw+//Ww/wLY8WiWr1bPvWxsCs+C8aSXwTfBttx7j9S/658MzDzWZY+qkMCb9giwFu2A==;EndpointSuffix=core.windows.net",
-                        "NexusEvents"),
-                    new DocumentDbPersistenceProvider<DummyModel>("https://db-tt-nexus-dev.documents.azure.com:443/",
+                    new EventSourcedPersistenceProvider<DummyModel>("https://db-tt-nexus-dev.documents.azure.com:443/",
                         "TiJJMqAdUQXh1SWw2Zfo8wBW0hpfq4ljQjSuJJrbbetOnCFZ9UMJGVgqzOf67Op23l1ZlPPvhclLEEDJ0BP5hQ==",
                         "NexusDB",
                         "NexusCore",
+                        "DefaultEndpointsProtocol=https;AccountName=nexuseventstorage;AccountKey=eiY0BC0pEQHOatyrO4vuw+//Ww/wLY8WiWr1bPvWxsCs+C8aSXwTfBttx7j9S/658MzDzWZY+qkMCb9giwFu2A==;EndpointSuffix=core.windows.net",
+                        "NexusEvents",
                         ""),
                     softdeleteEnabled);
             return service;

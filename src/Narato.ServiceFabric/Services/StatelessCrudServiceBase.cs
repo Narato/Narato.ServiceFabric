@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Narato.ServiceFabric.Services
 {
@@ -87,6 +88,42 @@ namespace Narato.ServiceFabric.Services
                 //TODO: check for entity == null        
                 return entities.ToList();
             }
+        }
+        
+        public virtual async Task<List<TModel>> GetHistoryAsync(string key)
+        {
+            if (_provider is IHistoryProvider)
+            {
+                var results = await ((IHistoryProvider) _provider).RetrieveHistoryAsync(key);
+                var castResults = new List<TModel>();
+                
+                foreach (var result in results)
+                {
+                    castResults.Add(JsonConvert.DeserializeObject<TModel>(result.Json));
+                }
+
+                return castResults;
+            }
+
+            throw new NotImplementedException("The provider is not of type IHistoryProvider, method GetHistoryAsync not available");
+        }
+        
+        public virtual async Task<TModel> GetHistoryBeforeOrOnDateAsync(string key, DateTime date)
+        {
+            if (_provider is IHistoryProvider)
+            {
+                var result = await ((IHistoryProvider) _provider).RetrieveHistoryBeforeDateAsync(key, date);
+                var entity = result.FirstOrDefault();
+            
+                if (entity == null)
+                    throw new EntityNotFoundException("ENF", $"Entity with key '{key}' was not found with a timestamp on or before the given datetime '{date}'.");
+            
+                var existingEntity = JsonConvert.DeserializeObject<TModel>(entity.Json);
+                return existingEntity;
+
+            }
+
+            throw new NotImplementedException("The provider is not of type IHistoryProvider, method GetHistoryAsync not available");
         }
     }
 }

@@ -51,15 +51,15 @@ namespace Narato.ServiceFabric.Persistence.TableStorage
             return (T)retrievedResult.Result;
         }
 
-        public async Task<IEnumerable<T>> GetAllEntityHistory<T>(string partitionKey) where T : ITableEntity
+        public async Task<IEnumerable<T>> GetAllEntityHistory<T>(string partitionKey) where T : ITableEntity, new ()
         {
             TableContinuationToken token = null;
             string partitionFilter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey);
-            TableQuery query = new TableQuery().Where(TableQuery.CombineFilters(partitionFilter, TableOperators.And, partitionFilter));
+            TableQuery<T> query = new TableQuery<T>().Where(TableQuery.CombineFilters(partitionFilter, TableOperators.And, partitionFilter));
 
             var result = await _eventsTable.ExecuteQuerySegmentedAsync(query, token);
 
-            return result.Results.ToList().Cast<T>();
+            return result.Results.ToList();
         }
 
         public async Task<IEnumerable<T>> GetEntityHistoryBeforeDate<T>(string partitionKey, DateTime date) where T : ITableEntity, new()

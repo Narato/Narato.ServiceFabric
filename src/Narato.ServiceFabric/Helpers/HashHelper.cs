@@ -2,7 +2,7 @@
 
 namespace Narato.ServiceFabric.Helpers
 {
-    public class HashHelper
+    public static class HashHelper
     {
         public static string CreateMD5(string input)
         {
