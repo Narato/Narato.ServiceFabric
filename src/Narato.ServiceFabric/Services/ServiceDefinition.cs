@@ -8,7 +8,10 @@ namespace Narato.ServiceFabric.Services
 
         public string InstanceKey { get; protected set; }
 
-        public virtual Uri ApplicationUri => new Uri(Environment.GetEnvironmentVariable("Fabric_ApplicationName") ?? "");
+        private string _application = Environment.GetEnvironmentVariable("Fabric_ApplicationName");
+        public string ApplicationName { protected get => _application; set => _application = "fabric:/" + value; }
+
+        public virtual Uri ApplicationUri => new Uri(ApplicationName ?? "");
         public virtual Uri ServiceUri => string.IsNullOrEmpty(InstanceKey) ?
             new Uri(ApplicationUri.AbsoluteUri + $"/{ServiceTypeName}") :
             new Uri(ApplicationUri.AbsoluteUri + $"/{ServiceTypeName}/{InstanceKey.ToLower()}");
