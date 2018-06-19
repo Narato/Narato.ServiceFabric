@@ -10,7 +10,6 @@ namespace Narato.ServiceFabric.Persistence
         Task PersistAsync(T model);
         Task<T> RetrieveAsync(string key);
         Task DeleteAsync(string key);
-        Task DeleteAllAsync();
 
         Task<IEnumerable<T>> RetrieveAllAsync();
     }

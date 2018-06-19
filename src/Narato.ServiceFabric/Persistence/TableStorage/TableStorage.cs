@@ -29,17 +29,24 @@ namespace Narato.ServiceFabric.Persistence.TableStorage
             await _eventsTable.CreateIfNotExistsAsync();
         }
 
-        public async Task PersistAsync(TableEntity model)
+        public async Task<ITableEntity> PersistAsync(TableEntity model)
         {
             //Only do inserts in the event sourcing table
-            await CreateRecordAsync(model);
+            return await CreateRecordAsync(model);
         }
 
-        private async Task CreateRecordAsync(TableEntity entityToCreate)
+        public async Task DeleteAsync(ITableEntity tableEntity)
+        {
+            TableOperation deleteOperation = TableOperation.Delete(tableEntity);
+            await _eventsTable.ExecuteAsync(deleteOperation);
+        }
+
+        private async Task<ITableEntity> CreateRecordAsync(TableEntity entityToCreate)
         {
             entityToCreate.RowKey = Guid.NewGuid().ToString();
             TableOperation insertOperation = TableOperation.Insert(entityToCreate);
-            await _eventsTable.ExecuteAsync(insertOperation);
+            var tableResult = await _eventsTable.ExecuteAsync(insertOperation);
+            return (ITableEntity)tableResult.Result;
         }
 
         //PartitionKey and rowkey form the key
@@ -51,21 +58,21 @@ namespace Narato.ServiceFabric.Persistence.TableStorage
             return (T)retrievedResult.Result;
         }
 
-        public async Task<IEnumerable<T>> GetAllEntityHistory<T>(string partitionKey) where T : ITableEntity
+        public async Task<IEnumerable<T>> GetAllEntityHistory<T>(string partitionKey) where T : ITableEntity, new ()
         {
             TableContinuationToken token = null;
             string partitionFilter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey);
-            TableQuery query = new TableQuery().Where(TableQuery.CombineFilters(partitionFilter, TableOperators.And, partitionFilter));
+            TableQuery<T> query = new TableQuery<T>().Where(TableQuery.CombineFilters(partitionFilter, TableOperators.And, partitionFilter));
 
             var result = await _eventsTable.ExecuteQuerySegmentedAsync(query, token);
 
-            return result.Results.ToList().Cast<T>();
+            return result.Results.ToList();
         }
 
         public async Task<IEnumerable<T>> GetEntityHistoryBeforeDate<T>(string partitionKey, DateTime date) where T : ITableEntity, new()
         {
             string partitionFilter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey);
-            string dateFilter = TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.LessThanOrEqual, date);
+            string dateFilter = TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.LessThanOrEqual, new DateTimeOffset(date.ToUniversalTime()));
 
             TableContinuationToken token = null;
             TableQuery<T> query = new TableQuery<T>().Where(TableQuery.CombineFilters(partitionFilter, TableOperators.And, dateFilter));

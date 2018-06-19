@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage.Table;
+using Narato.ServiceFabric.Models;
 
 namespace Narato.ServiceFabric.Persistence
 {
-    public interface IHistoryProvider<T>
-        where T : TableEntity, new()
+    public interface IHistoryProvider
     {
-        Task<IEnumerable<T>> RetrieveHistoryAsync(string key);
-        Task<IEnumerable<T>> RetrieveHistoryBeforeDateAsync(string partitionKey, DateTime date);
+        Task<IEnumerable<EventSourcingTableStorageEntity>> RetrieveHistoryAsync(string key);
+        Task<IEnumerable<EventSourcingTableStorageEntity>> RetrieveHistoryBeforeDateAsync(string partitionKey, DateTime date);
     }
 }

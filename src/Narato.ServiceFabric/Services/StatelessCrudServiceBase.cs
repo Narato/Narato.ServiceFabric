@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Narato.ServiceFabric.Services
 {
@@ -21,7 +22,7 @@ namespace Narato.ServiceFabric.Services
             _softDeleteEnabled = softDeleteEnabled;
         }
 
-        public virtual async Task<TModel> Create(TModel modelToCreate)
+        public virtual async Task<TModel> CreateAsync(TModel modelToCreate)
         {
             var entity = await _provider.RetrieveAsync(modelToCreate.Key);
 
@@ -30,10 +31,10 @@ namespace Narato.ServiceFabric.Services
 
             await _provider.PersistAsync(modelToCreate);
 
-            return await Get(modelToCreate.Key);
+            return await GetAsync(modelToCreate.Key);
         }
 
-        public virtual async Task<TModel> Update(TModel modelToUpdate)
+        public virtual async Task<TModel> UpdateAsync(TModel modelToUpdate)
         {
             var entity = await _provider.RetrieveAsync(modelToUpdate.Key);
 
@@ -44,14 +45,14 @@ namespace Narato.ServiceFabric.Services
 
             await _provider.PersistAsync(modelToUpdate);
 
-            return await Get(modelToUpdate.Key);
+            return await GetAsync(modelToUpdate.Key);
         }
 
-        public virtual async Task Delete(string key)
+        public virtual async Task DeleteAsync(string key)
         {
             if (_softDeleteEnabled)
             {
-                var entity = await Get(key);
+                var entity = await GetAsync(key);
                 entity.EntityStatus = EntityStatus.Deleted;
                 entity.StatusChangedAt = DateTime.UtcNow;
 
@@ -63,7 +64,7 @@ namespace Narato.ServiceFabric.Services
             }
         }
 
-        public virtual async Task<TModel> Get(string key)
+        public virtual async Task<TModel> GetAsync(string key)
         {
             var entity = await _provider.RetrieveAsync(key);
 
@@ -73,7 +74,7 @@ namespace Narato.ServiceFabric.Services
             return entity;
         }
 
-        public virtual async Task<List<TModel>> GetAll()
+        public virtual async Task<List<TModel>> GetAllAsync()
         {
             if (_softDeleteEnabled)
             {
@@ -87,6 +88,42 @@ namespace Narato.ServiceFabric.Services
                 //TODO: check for entity == null        
                 return entities.ToList();
             }
+        }
+        
+        public virtual async Task<List<TModel>> GetHistoryAsync(string key)
+        {
+            if (_provider is IHistoryProvider)
+            {
+                var results = await ((IHistoryProvider) _provider).RetrieveHistoryAsync(key);
+                var castResults = new List<TModel>();
+                
+                foreach (var result in results)
+                {
+                    castResults.Add(JsonConvert.DeserializeObject<TModel>(result.Json));
+                }
+
+                return castResults;
+            }
+
+            throw new NotImplementedException("The provider is not of type IHistoryProvider, method GetHistoryAsync is not available");
+        }
+        
+        public virtual async Task<TModel> GetHistoryBeforeOrOnDateAsync(string key, DateTime date)
+        {
+            if (_provider is IHistoryProvider)
+            {
+                var result = await ((IHistoryProvider) _provider).RetrieveHistoryBeforeDateAsync(key, date);
+                var entity = result.FirstOrDefault();
+            
+                if (entity == null)
+                    throw new EntityNotFoundException("ENF", $"Entity with key '{key}' was not found with a timestamp on or before the given datetime '{date}'.");
+            
+                var existingEntity = JsonConvert.DeserializeObject<TModel>(entity.Json);
+                return existingEntity;
+
+            }
+
+            throw new NotImplementedException("The provider is not of type IHistoryProvider, method GetHistoryBeforeOrOnDateAsync is not available");
         }
     }
 }
