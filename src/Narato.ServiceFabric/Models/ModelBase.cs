@@ -44,7 +44,7 @@ namespace Narato.ServiceFabric.Models
 
         public string Key
         {
-            get { return GetKey(); }
+            get { return GetKey().ToLower(); }
             set { _key = value; }
         }
 

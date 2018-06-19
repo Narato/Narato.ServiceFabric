@@ -105,7 +105,7 @@ namespace Narato.ServiceFabric.Services
                 return castResults;
             }
 
-            throw new NotImplementedException("The provider is not of type IHistoryProvider, method GetHistoryAsync not available");
+            throw new NotImplementedException("The provider is not of type IHistoryProvider, method GetHistoryAsync is not available");
         }
         
         public virtual async Task<TModel> GetHistoryBeforeOrOnDateAsync(string key, DateTime date)
@@ -123,7 +123,7 @@ namespace Narato.ServiceFabric.Services
 
             }
 
-            throw new NotImplementedException("The provider is not of type IHistoryProvider, method GetHistoryAsync not available");
+            throw new NotImplementedException("The provider is not of type IHistoryProvider, method GetHistoryBeforeOrOnDateAsync is not available");
         }
     }
 }

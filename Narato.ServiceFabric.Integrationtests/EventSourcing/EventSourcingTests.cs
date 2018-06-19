@@ -48,7 +48,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         [Fact]
         public async void UpdateModel()
         {
-            var dummy = await _service.GetAsync("Nieuw model");
+            var dummy = await _service.GetAsync("nieuw model");
             dummy.Name = "updated";
             dummy.Inner.InnerName = "UpdatedInner";
 
@@ -62,7 +62,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         [Fact]
         public async void GetInitialModel()
         {      
-            var historyModel = await _service.GetHistoryBeforeOrOnDateAsync("Nieuw model", new DateTime(2018, 6, 13, 10, 48, 45));
+            var historyModel = await _service.GetHistoryBeforeOrOnDateAsync("Nieuw model", new DateTime(2018, 6, 13, 11, 48, 45));
 
             Assert.NotEqual(null, historyModel);
         }
@@ -70,10 +70,10 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         [Fact]
         public async void SoftDeleteModel()
         {
-            await _service.DeleteAsync("Nieuw model");
+            await _service.DeleteAsync("nieuw model");
 
-            var model = await _service.GetAsync("Nieuw model");
-            var history = await _service.GetHistoryAsync("Nieuw model");
+            var model = await _service.GetAsync("nieuw model");
+            var history = await _service.GetHistoryAsync("nieuw model");
             
             Assert.True(history.Count() > 1);
             Assert.Equal(EntityStatus.Deleted, model.EntityStatus);
@@ -83,8 +83,8 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         public async void HardDeleteModel()
         {
             _service = GetService(false);
-            await _service.DeleteAsync("Nieuw model");
-            var history = await _service.GetHistoryAsync("Nieuw model");
+            await _service.DeleteAsync("nieuw model");
+            var history = await _service.GetHistoryAsync("nieuw model");
             
             Assert.True(history.Count() > 1);
             await Assert.ThrowsAsync<EntityNotFoundException>(() =>  _service.GetAsync("Nieuw model"));

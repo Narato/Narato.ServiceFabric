@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using JsonDiffPatch;
 using Microsoft.Azure.Documents.Client;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.WindowsAzure.Storage.Table;
 using Narato.ServiceFabric.Helpers;
 using Narato.ServiceFabric.Models;
 using Narato.StringExtensions;
@@ -25,15 +27,25 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
 
         public async Task PersistAsync(TModel model)
         {
-            //TODO: in transaction steken
-            
             var persistedObject = await RetrieveInternalAsync(model.Key);
             
             if (persistedObject == null)
             {
                 SetETag(model);
-                
+
                 await _db.CreateDocumentAsync(new PersistedModel<TModel>(model));
+
+                //Try catch to handle transaction logic
+                try
+                {
+                    await EventSourcingCreateRecordAsync(null, model);
+                }
+                catch
+                {
+                    //Revert the creation of the documentDb doc
+                    await DeleteAsync(model.Key, false);
+                    throw;
+                }
             }
             else
             {
@@ -44,14 +56,22 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
                 
                 SetETag(model);
                 
-                persistedObject.Current = model;
-                await _db.UpdateDocumentAsync(persistedObject);
-            }
-            
-            if(model.EntityStatus == EntityStatus.Deleted)
-                await EventSourcingDeleteRecordAsync(model, true);
-            else
-                await EventSourcingCreateRecordAsync(persistedObject?.Current, model);
+                //It's important that this happens before the persistedObject.Current is set to the updated model to get the diff...
+                var newEventSourcingRecord = await EventSourcingCreateRecordAsync(persistedObject?.Current, model);
+
+                try
+                {
+                    persistedObject.Current = model;
+                    await _db.UpdateDocumentAsync(persistedObject);
+                }
+                catch
+                {
+                    //Revert the creation of the event sourcing record
+                    //var entityToDelete = await TableStorage.GetSingleEntity<ITableEntity>(newEventSourcingRecord.PartitionKey, newEventSourcingRecord.RowKey);
+                    await TableStorage.DeleteAsync(newEventSourcingRecord);
+                    throw;
+                }
+            }   
         }
 
         public async Task<TModel> RetrieveAsync(string key)
@@ -87,29 +107,38 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
             return result;
         }
 
-
         public async Task DeleteAsync(string key)
+        {
+            await DeleteAsync(key, true);
+        }
+        
+        private async Task DeleteAsync(string key, bool withEventSourcing = true)
         {           
             var document = await RetrieveInternalAsync(key);
             await DocDbDatabase.Client.DeleteDocumentAsync(document.Self);
-            
-            SetETag(document.Current);
-            await EventSourcingDeleteRecordAsync(document.Current, false);
+
+            if (withEventSourcing)
+            {
+                SetETag(document.Current);
+                await EventSourcingDeleteRecordAsync(document.Current);
+            }
         }
 
         public async Task DeleteAllAsync()
         {
             var queryOptions = new FeedOptions { MaxItemCount = -1 };
-            var result = DocDbDatabase.Client
+            var results= DocDbDatabase.Client
                 .CreateDocumentQuery<PersistedModel<TModel>>(UriFactory.CreateDocumentCollectionUri(_db.DatabaseName,
                     _db.CollectionName), queryOptions)
                 .Where(c => c.Type == typeof(TModel).Name)
                 .AsEnumerable().ToList();
             
-            foreach (var timesheet in result)
+            foreach (var result in results.ToList())
             {
                 await DocDbDatabase.Client.DeleteDocumentAsync(
-                    new Uri(_db.EndPoint.Replace(":443", "") + timesheet.Self));
+                    new Uri(_db.EndPoint.Replace(":443", "") + result.Self));
+                
+                await EventSourcingDeleteRecordAsync(result.Current);
             }
         }
         
@@ -122,28 +151,16 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
         {
             return await TableStorage.GetEntityHistoryBeforeDate<EventSourcingTableStorageEntity>(partitionKey, date);
         }
-        
-        private async Task EventSourcingDeleteRecordAsync(TModel modelToDelete, bool isSoftDelete)
-        {
-            PatchDocument patchDocument;
 
-            if (isSoftDelete)
-            {
-                var tmpJsonModel =  modelToDelete.ToJson();
-                
-                modelToDelete.EntityStatus = EntityStatus.Deleted;
-                patchDocument = CalculateJsonDiff(tmpJsonModel, modelToDelete.ToJson());
-            }
-            else
-            {
-                modelToDelete.EntityStatus = EntityStatus.Deleted;
-                patchDocument = CalculateJsonDiff(modelToDelete.ToJson(), "".ToJson());
-            }
+        private async Task EventSourcingDeleteRecordAsync(TModel modelToDelete)
+        {
+            modelToDelete.EntityStatus = EntityStatus.Deleted;
+            var patchDocument = CalculateJsonDiff(modelToDelete.ToJson(), "".ToJson());
 
             await PersistEventSourcingRecordAsync(modelToDelete.Key, patchDocument, modelToDelete);
         }
 
-        private async Task EventSourcingCreateRecordAsync(TModel existingModel, TModel newModel)
+        private async Task<ITableEntity> EventSourcingCreateRecordAsync(TModel existingModel, TModel newModel)
         {
             PatchDocument patchDocument;
             
@@ -156,7 +173,7 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
                 patchDocument = CalculateJsonDiff(existingModel.ToJson(), newModel.ToJson());
             }
             
-            await PersistEventSourcingRecordAsync(newModel.Key, patchDocument, newModel);
+            return await PersistEventSourcingRecordAsync(newModel.Key, patchDocument, newModel);
         }
         
         private PatchDocument CalculateJsonDiff(string existingObject, string newObject)
@@ -166,7 +183,7 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
             return new JsonDiffer().Diff(existing, newOne, false);
         }
         
-        private async Task PersistEventSourcingRecordAsync(string partitionKey, PatchDocument patchDocument, TModel model)
+        private async Task<ITableEntity> PersistEventSourcingRecordAsync(string partitionKey, PatchDocument patchDocument, TModel model)
         {
             EventSourcingTableStorageEntity eventSourcingEntity = new EventSourcingTableStorageEntity();
             eventSourcingEntity.Operations = patchDocument.ToString();
@@ -174,7 +191,8 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
             eventSourcingEntity.Json = model.ToJson();
             eventSourcingEntity.ETag = model.ETag;
 
-            await TableStorage.PersistAsync(eventSourcingEntity);
+            var newEntity = await TableStorage.PersistAsync(eventSourcingEntity);
+            return newEntity;
         }
         
         private void SetETag(TModel modelToUpdate)
