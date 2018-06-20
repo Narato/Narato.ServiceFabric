@@ -22,11 +22,11 @@ namespace Narato.ServiceFabric.ServiceBus
         public void RegisterMessageHandler(Func<Message, CancellationToken, Task> value)
         {
             _messageHandler = value;
+            RegisterOnMessageHandlerAndReceiveMessages(ProcessMessagesAsync);
         }
 
         public async Task<string> OpenAsync(CancellationToken cancellationToken)
         {
-            RegisterOnMessageHandlerAndReceiveMessages(ProcessMessagesAsync);
             return _subscriptionClient.ClientId;
         }
 
