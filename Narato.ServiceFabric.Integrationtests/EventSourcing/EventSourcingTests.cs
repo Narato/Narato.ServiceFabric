@@ -97,10 +97,10 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
                     MockStatelessServiceContextFactory.Default,
                     new EventSourcedPersistenceProvider<DummyModel>("https://db-tt-nexus-dev.documents.azure.com:443/",
                         "TiJJMqAdUQXh1SWw2Zfo8wBW0hpfq4ljQjSuJJrbbetOnCFZ9UMJGVgqzOf67Op23l1ZlPPvhclLEEDJ0BP5hQ==",
-                        "NexusDB",
-                        "NexusCore",
-                        "DefaultEndpointsProtocol=https;AccountName=nexuseventstorage;AccountKey=eiY0BC0pEQHOatyrO4vuw+//Ww/wLY8WiWr1bPvWxsCs+C8aSXwTfBttx7j9S/658MzDzWZY+qkMCb9giwFu2A==;EndpointSuffix=core.windows.net",
-                        "NexusEvents",
+                        "Models",
+                        "ServiceFabrictest",
+                        "DefaultEndpointsProtocol=https;AccountName=loadtestseventsourcing;AccountKey=2f/z5vxrHQM9DASJOfOtiFxngIEmbdJm/K+xAaI71nyysCSr9aMoDIVk/qV+SkEzKiuPf3UA7oXH6StYH0vjlw==;EndpointSuffix=core.windows.net",
+                        "eventsourcing",
                         ""),
                     softdeleteEnabled);
             return service;

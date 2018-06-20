@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Narato.ServiceFabric\Narato.ServiceFabric.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.ServiceFabric.Services.Remoting">
+      <HintPath>..\..\..\..\Users\dimitris\.nuget\packages\microsoft.servicefabric.services.remoting\3.1.274\ref\netstandard2.0\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
