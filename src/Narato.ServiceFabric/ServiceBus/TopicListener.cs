@@ -16,7 +16,6 @@ namespace Narato.ServiceFabric.ServiceBus
         {
             _telemetryClient = new TelemetryClient();
             _subscriptionClient = subscriptionClient;
-            RegisterOnMessageHandlerAndReceiveMessages(handler);
         }
 
         public void RegisterMessageHandler(Func<Message, CancellationToken, Task> value)
