@@ -6,17 +6,16 @@ using System.Threading.Tasks;
 
 namespace Narato.ServiceFabric.ServiceBus
 {
-    public class TopicListener
+    public class TopicListener : ITopicListener
     {
         private Func<Message, CancellationToken, Task> _messageHandler;
         protected ISubscriptionClient _subscriptionClient;
         protected TelemetryClient _telemetryClient;
 
-        public TopicListener(ISubscriptionClient subscriptionClient, Func<Message, CancellationToken, Task> handler)
+        public TopicListener(ISubscriptionClient subscriptionClient)
         {
             _telemetryClient = new TelemetryClient();
             _subscriptionClient = subscriptionClient;
-            RegisterOnMessageHandlerAndReceiveMessages(handler);
         }
 
         public void RegisterMessageHandler(Func<Message, CancellationToken, Task> value)
