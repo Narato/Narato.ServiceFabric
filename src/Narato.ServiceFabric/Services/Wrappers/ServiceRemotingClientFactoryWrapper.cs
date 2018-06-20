@@ -42,7 +42,7 @@ namespace Narato.ServiceFabric.Services.Wrappers
         public async Task<OperationRetryControl> ReportOperationExceptionAsync(IServiceRemotingClient client, ExceptionInformation exceptionInformation, OperationRetrySettings retrySettings, CancellationToken cancellationToken)
         {
             var exceptionTelemetry = new ExceptionTelemetry();
-            exceptionTelemetry.Context.Operation.Id = CallContext.GetData(Constants.CorrelationId).ToString();
+            exceptionTelemetry.Context.Operation.Id = CallContext.GetData(Constants.CorrelationId)?.ToString();
             exceptionTelemetry.Exception = exceptionInformation.Exception;
             exceptionTelemetry.Message = "An unhandled exception occured";
 

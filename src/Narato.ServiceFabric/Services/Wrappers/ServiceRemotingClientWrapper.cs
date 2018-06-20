@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Fabric;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,7 +43,7 @@ namespace Narato.ServiceFabric.Services.Wrappers
             if (Activity.Current != null)
                 correlationId = Activity.Current.RootId;
             else
-                correlationId = (string)CallContext.GetData(Constants.CorrelationId);
+                correlationId = (string)CallContext.GetData(Constants.CorrelationId) ?? Guid.NewGuid().ToString();
 
             requestMessage.GetHeader().AddHeader(Constants.CorrelationId, Encoding.ASCII.GetBytes(correlationId));
 
