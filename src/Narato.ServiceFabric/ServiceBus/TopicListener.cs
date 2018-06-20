@@ -79,17 +79,17 @@ namespace Narato.ServiceFabric.ServiceBus
             await _messageHandler(message, cancellationToken);
 
 
-            // The cancellationToken is used to determine if the subscriptionClient has already been closed.
+             // The cancellationToken is used to determine if the subscriptionClient has already been closed.
             if (cancellationToken.IsCancellationRequested)
+            {
+                // If subscriptionClient has already been closed, call AbandonAsync() to avoid unnecessary exceptions.
+                await _subscriptionClient.AbandonAsync(message.SystemProperties.LockToken);
+            }
+            else
             {
                 // Complete the message so that it is not received again.
                 // This can be done only if the subscriptionClient is created in ReceiveMode.PeekLock mode (which is the default).
                 await _subscriptionClient.CompleteAsync(message.SystemProperties.LockToken);
-            }
-            else
-            {
-                // If subscriptionClient has already been closed, call AbandonAsync() to avoid unnecessary exceptions.
-                await _subscriptionClient.AbandonAsync(message.SystemProperties.LockToken);
             }
         }
     }
