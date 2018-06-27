@@ -7,6 +7,6 @@ namespace Narato.ServiceFabric.Contracts.Contracts
 {
     public class TestServiceDefinition : ServiceDefinition
     {
-        public override string ServiceTypeName => "TestService";
+        public override string ServiceTypeName => "Narato.ServiceFabric.TestService";
     }
 }

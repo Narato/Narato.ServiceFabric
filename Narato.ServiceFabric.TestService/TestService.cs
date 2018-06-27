@@ -11,8 +11,7 @@ namespace Narato.ServiceFabric.TestService
     /// </summary>
     internal sealed class TestService : StatelessCrudServiceBase<TestModel>, ITestService
     {
-        public TestService(StatelessServiceContext context, DocumentDbEventSourcingTestModelProvider provider,
-            bool softDeleteEnabled)
+        public TestService(StatelessServiceContext context, DocumentDbEventSourcingTestModelProvider provider, bool softDeleteEnabled)
             : base(context, provider, softDeleteEnabled)
         {
         }

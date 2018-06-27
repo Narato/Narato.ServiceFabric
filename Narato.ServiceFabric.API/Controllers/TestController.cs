@@ -14,18 +14,26 @@ namespace Narato.ServiceFabric.API.Controllers
     public class TestController : Controller
     {
         [HttpPost]
-        public async Task<IActionResult> Create(TestModel model)
+        public async Task<IActionResult> Create([FromBody]TestModel model)
         {
-            var testService = new ServiceResolver().Resolve<ITestService>(new TestServiceDefinition());
-            var created = await testService.CreateAsync(new TestModel());
-            return Ok(created);
+            try
+            {
+                var testService = new ServiceResolver().Resolve<ITestService>(new TestServiceDefinition());
+                var created = await testService.CreateAsync(model);
+                return Ok(created);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update(TestModel model)
+        public async Task<IActionResult> Update([FromBody]TestModel model)
         {
             var testService = new ServiceResolver().Resolve<ITestService>(new TestServiceDefinition());
-            var created = await testService.UpdateAsync(new TestModel());
+            var created = await testService.UpdateAsync(model);
             return Ok(created);
         }
 

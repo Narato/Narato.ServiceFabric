@@ -9,7 +9,7 @@ using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace Narato.ServiceFabric.API
 {
-    [EventSource(Name = "MyCompany-Narato.ServiceFabric.SF-Narato.ServiceFabric.API")]
+    [EventSource(Name = "Narato.ServiceFabric.SF-Narato.ServiceFabric.API")]
     internal sealed class ServiceEventSource : EventSource
     {
         public static readonly ServiceEventSource Current = new ServiceEventSource();
