@@ -16,8 +16,7 @@
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.1.274" />
     <PackageReference Include="Microsoft.ServiceFabric.Services.Remoting" Version="3.1.274" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Fabric.MSBuild" Version="1.6.6" />
-    <PackageReference Include="Narato.ResponseMiddleware.Models" Version="2.0.2" />
-    <PackageReference Include="Narato.ResponseMiddleware.Models.Legacy" Version="2.0.1" />
+    <PackageReference Include="Narato.ResponseMiddleware.Models" Version="2.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   
