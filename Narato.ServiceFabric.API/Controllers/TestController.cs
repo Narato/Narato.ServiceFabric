@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Narato.ServiceFabric.Contracts.Contracts;
 using Narato.ServiceFabric.Contracts.Models;
@@ -16,17 +13,9 @@ namespace Narato.ServiceFabric.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody]TestModel model)
         {
-            try
-            {
-                var testService = new ServiceResolver().Resolve<ITestService>(new TestServiceDefinition());
-                var created = await testService.CreateAsync(model);
-                return Ok(created);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            var testService = new ServiceResolver().Resolve<ITestService>(new TestServiceDefinition());
+            var created = await testService.CreateAsync(model);
+            return Ok(created);
         }
 
         [HttpPut]
@@ -37,7 +26,7 @@ namespace Narato.ServiceFabric.API.Controllers
             return Ok(created);
         }
 
-        [HttpDelete]
+        [HttpDelete("{key}")]
         public async Task<IActionResult> Delete(string key)
         {
             var testService = new ServiceResolver().Resolve<ITestService>(new TestServiceDefinition());

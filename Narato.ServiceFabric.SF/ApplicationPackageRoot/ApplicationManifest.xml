@@ -10,6 +10,7 @@
     <Parameter Name="tableStorageConnectionString" DefaultValue="" />
     <Parameter Name="tableStorageTableName" DefaultValue="" />
     <Parameter Name="tableStorageAuthenticationName" DefaultValue="" />
+    <Parameter Name="useSoftdelete" DefaultValue="" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
@@ -27,6 +28,7 @@
             <Parameter Name="tableStorageConnectionString" Value="[tableStorageConnectionString]" />
             <Parameter Name="tableStorageTableName" Value="[tableStorageTableName]" />
             <Parameter Name="tableStorageAuthenticationName" Value="[tableStorageAuthenticationName]" />
+            <Parameter Name="useSoftdelete" Value="[useSoftdelete]" />
           </Section>
         </Settings>
       </ConfigOverride>

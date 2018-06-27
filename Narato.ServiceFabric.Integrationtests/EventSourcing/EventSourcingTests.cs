@@ -98,7 +98,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
                     new EventSourcedPersistenceProvider<DummyModel>("https://db-tt-nexus-dev.documents.azure.com:443/",
                         "TiJJMqAdUQXh1SWw2Zfo8wBW0hpfq4ljQjSuJJrbbetOnCFZ9UMJGVgqzOf67Op23l1ZlPPvhclLEEDJ0BP5hQ==",
                         "Models",
-                        "ServiceFabrictest",
+                        "ServiceFabricTest",
                         "DefaultEndpointsProtocol=https;AccountName=loadtestseventsourcing;AccountKey=2f/z5vxrHQM9DASJOfOtiFxngIEmbdJm/K+xAaI71nyysCSr9aMoDIVk/qV+SkEzKiuPf3UA7oXH6StYH0vjlw==;EndpointSuffix=core.windows.net",
                         "eventsourcing",
                         ""),

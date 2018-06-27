@@ -5,10 +5,11 @@
   <Section Name="MyConfigSection">
     <Parameter Name="docdbEndPoint" Value="https://loadtestsservicefabric.documents.azure.com:443/" />
     <Parameter Name="docdbAuthKey" Value="IBNxEL8T8jsvZBTVENw5uNORLbLIM1DiyWZgD92LInDH5i8rDkrbrOfDt3gb8LyxH5lrB5D2e0qHMHzWWW2LKQ==" />
-    <Parameter Name="docdbDatabase" Value="ServiceFabrictest" />
+    <Parameter Name="docdbDatabase" Value="ServiceFabricTest" />
     <Parameter Name="docdbCollection" Value="Models" />
     <Parameter Name="tableStorageConnectionString" Value="DefaultEndpointsProtocol=https;AccountName=loadtestseventsourcing;AccountKey=2f/z5vxrHQM9DASJOfOtiFxngIEmbdJm/K+xAaI71nyysCSr9aMoDIVk/qV+SkEzKiuPf3UA7oXH6StYH0vjlw==;EndpointSuffix=core.windows.net" />
     <Parameter Name="tableStorageTableName" Value="eventsourcing" />
     <Parameter Name="tableStorageAuthenticationName" Value="" />
+    <Parameter Name="useSoftdelete" Value="false" />
   </Section>
 </Settings>

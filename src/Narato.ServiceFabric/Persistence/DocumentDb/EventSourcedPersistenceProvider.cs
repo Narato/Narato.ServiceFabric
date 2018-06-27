@@ -162,6 +162,9 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
 
         private async Task<ITableEntity> EventSourcingCreateRecordAsync(TModel existingModel, TModel newModel)
         {
+            if (newModel.Key == null)
+                throw new NullReferenceException("Key must be filled out");
+            
             PatchDocument patchDocument;
             
             if (existingModel == null)

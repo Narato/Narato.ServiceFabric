@@ -31,10 +31,11 @@ namespace Narato.ServiceFabric.TestService
                         var tableStorageConnectionString = configurationPackage.Settings.Sections["MyConfigSection"].Parameters["tableStorageConnectionString"].Value;
                         var tableStorageTableName = configurationPackage.Settings.Sections["MyConfigSection"].Parameters["tableStorageTableName"].Value;
                         var tableStorageAuthenticationName = configurationPackage.Settings.Sections["MyConfigSection"].Parameters["tableStorageAuthenticationName"].Value;
+                        var useSoftdelete = Convert.ToBoolean(configurationPackage.Settings.Sections["MyConfigSection"].Parameters["useSoftdelete"].Value);
 
                         var provider = new DocumentDbEventSourcingTestModelProvider(docDbEndpoint, docdbAuthKey, docdbDatabase, docdbCollection, tableStorageConnectionString, tableStorageTableName, tableStorageAuthenticationName);
 
-                        return new TestService(context, provider, true);
+                        return new TestService(context, provider, useSoftdelete);
                     }).GetAwaiter().GetResult();
 
                 ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(TestService).Name);

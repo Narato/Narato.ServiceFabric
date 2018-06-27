@@ -24,7 +24,9 @@ namespace Narato.ServiceFabric.Services
 
         public virtual async Task<TModel> CreateAsync(TModel modelToCreate)
         {
-            var entity = await _provider.RetrieveAsync(modelToCreate.Key);
+            TModel entity = null;
+            
+            entity = await _provider.RetrieveAsync(modelToCreate.Key);
 
             if (entity != null)
                 throw new ExceptionWithFeedback("EAE", $"The entity of type '{typeof(TModel).Name}' with key '{modelToCreate.Key}' already exists."); //todo update to EntityAlreadyExists exception
