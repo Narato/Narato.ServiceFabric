@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using JsonDiffPatch;
 using Microsoft.Azure.Documents.Client;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.WindowsAzure.Storage.Table;
 using Narato.ServiceFabric.Helpers;
 using Narato.ServiceFabric.Models;
@@ -15,68 +15,82 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
 {
     public class EventSourcedPersistenceProvider<TModel> : IPersistenceProvider<TModel>, IHistoryProvider where TModel : ModelBase, new()
     {
-        private readonly TableStorage.TableStorage TableStorage;
+        private readonly TableStorage.TableStorage _tableStorage;
         private readonly DocDbDatabase _db;
         private string _accountKey;
+        private readonly SemaphoreSlim _persistMutex = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _deleteMutex = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _deleteAllMutex = new SemaphoreSlim(1,1);
         
         public EventSourcedPersistenceProvider(string endPoint, string authKey, string dbName, string collectionName, string cloudStorageConnectionString, string tableName, string accountKey = "")
         {
             _db = new DocDbDatabase(endPoint, authKey, dbName, collectionName);
-            TableStorage = new TableStorage.TableStorage(cloudStorageConnectionString, tableName);
+            _tableStorage = new TableStorage.TableStorage(cloudStorageConnectionString, tableName);
         }
 
         public async Task PersistAsync(TModel model)
         {
-            var persistedObject = await RetrieveInternalAsync(model.Key);
-            
-            if (persistedObject == null)
+            //waits untill the previous task has been finished (sort of like a lock but no 100% the same)
+            await _persistMutex.WaitAsync().ConfigureAwait(false);
+
+            try
             {
-                SetETag(model);
+                var persistedObject = RetrieveInternal(model.Key);
 
-                await _db.CreateDocumentAsync(new PersistedModel<TModel>(model));
-
-                //Try catch to handle transaction logic
-                try
+                if (persistedObject == null)
                 {
-                    await EventSourcingCreateRecordAsync(null, model);
+                    SetETag(model);
+
+                    await _db.CreateDocumentAsync(new PersistedModel<TModel>(model));
+
+                    //Try catch to handle transaction logic
+                    try
+                    {
+                        await EventSourcingCreateRecordAsync(null, model);
+                    }
+                    catch
+                    {
+                        //Revert the creation of the documentDb doc
+                        await DeleteAsync(model.Key, false);
+                        throw;
+                    }
                 }
-                catch
+                else
                 {
-                    //Revert the creation of the documentDb doc
-                    await DeleteAsync(model.Key, false);
-                    throw;
+                    //When doing a patch, the last one wins since we are only updating a part of the object and probably do not have access to the etag.
+                    //To detect a patch operation, check the e-tag for a null value
+                    if (persistedObject.Current.ETag != null && persistedObject.Current.ETag != model.ETag)
+                        throw new Exception("The object has changed between your read action and this update request. We cannot continue with the save.");
+
+                    SetETag(model);
+
+                    //It's important that this happens before the persistedObject.Current is set to the updated model to get the diff...
+                    var newEventSourcingRecord = await EventSourcingCreateRecordAsync(persistedObject.Current, model);
+
+                    try
+                    {
+                        persistedObject.Current = model;
+                        await _db.UpdateDocumentAsync(persistedObject);
+                    }
+                    catch
+                    {
+                        //Revert the creation of the event sourcing record
+                        //var entityToDelete = await TableStorage.GetSingleEntity<ITableEntity>(newEventSourcingRecord.PartitionKey, newEventSourcingRecord.RowKey);
+                        await _tableStorage.DeleteAsync(newEventSourcingRecord);
+                        throw;
+                    }
                 }
             }
-            else
+            finally
             {
-                //When doing a patch, the last one wins since we are only updating a part of the object and probably do not have access to the etag.
-                //To detect a patch operation, check the e-tag for a null value
-                if (persistedObject.Current.ETag != null && persistedObject.Current.ETag != model.ETag)
-                    throw new Exception("The object has changed between your read action and this update request. We cannot continue with the save.");
-                
-                SetETag(model);
-                
-                //It's important that this happens before the persistedObject.Current is set to the updated model to get the diff...
-                var newEventSourcingRecord = await EventSourcingCreateRecordAsync(persistedObject?.Current, model);
+                _persistMutex.Release();
+            }
 
-                try
-                {
-                    persistedObject.Current = model;
-                    await _db.UpdateDocumentAsync(persistedObject);
-                }
-                catch
-                {
-                    //Revert the creation of the event sourcing record
-                    //var entityToDelete = await TableStorage.GetSingleEntity<ITableEntity>(newEventSourcingRecord.PartitionKey, newEventSourcingRecord.RowKey);
-                    await TableStorage.DeleteAsync(newEventSourcingRecord);
-                    throw;
-                }
-            }   
         }
 
         public async Task<TModel> RetrieveAsync(string key)
         {
-            var result = await RetrieveInternalAsync(key);
+            var result = RetrieveInternal(key);
             return result?.Current;
         }
 
@@ -94,7 +108,7 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
             return result;
         }
 
-        private async Task<PersistedModel<TModel>> RetrieveInternalAsync(string key)
+        private PersistedModel<TModel> RetrieveInternal(string key)
         {
             var queryOptions = new FeedOptions { MaxItemCount = -1 };
             var result = DocDbDatabase.Client
@@ -113,43 +127,63 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
         }
         
         private async Task DeleteAsync(string key, bool withEventSourcing = true)
-        {           
-            var document = await RetrieveInternalAsync(key);
-            await DocDbDatabase.Client.DeleteDocumentAsync(document.Self);
+        {
+            await _deleteMutex.WaitAsync().ConfigureAwait(false);
 
-            if (withEventSourcing)
+            try
             {
-                SetETag(document.Current);
-                await EventSourcingDeleteRecordAsync(document.Current);
+                var document = RetrieveInternal(key);
+                await DocDbDatabase.Client.DeleteDocumentAsync(document.Self);
+
+                if (withEventSourcing)
+                {
+                    SetETag(document.Current);
+                    await EventSourcingDeleteRecordAsync(document.Current);
+                }
             }
+            finally
+            {
+                _deleteMutex.Release();
+            }
+
+            
         }
 
         public async Task DeleteAllAsync()
         {
-            var queryOptions = new FeedOptions { MaxItemCount = -1 };
-            var results= DocDbDatabase.Client
-                .CreateDocumentQuery<PersistedModel<TModel>>(UriFactory.CreateDocumentCollectionUri(_db.DatabaseName,
-                    _db.CollectionName), queryOptions)
-                .Where(c => c.Type == typeof(TModel).Name)
-                .AsEnumerable().ToList();
-            
-            foreach (var result in results.ToList())
+            await _deleteAllMutex.WaitAsync().ConfigureAwait(false);
+
+            try
             {
-                await DocDbDatabase.Client.DeleteDocumentAsync(
-                    new Uri(_db.EndPoint.Replace(":443", "") + result.Self));
-                
-                await EventSourcingDeleteRecordAsync(result.Current);
+                var queryOptions = new FeedOptions { MaxItemCount = -1 };
+                var results = DocDbDatabase.Client
+                    .CreateDocumentQuery<PersistedModel<TModel>>(UriFactory.CreateDocumentCollectionUri(_db.DatabaseName,
+                        _db.CollectionName), queryOptions)
+                    .Where(c => c.Type == typeof(TModel).Name)
+                    .AsEnumerable().ToList();
+
+                foreach (var result in results.ToList())
+                {
+                    await DocDbDatabase.Client.DeleteDocumentAsync(
+                        new Uri(_db.EndPoint.Replace(":443", "") + result.Self));
+
+                    await EventSourcingDeleteRecordAsync(result.Current);
+                }
+            }
+            finally
+            {
+                _deleteAllMutex.Release();
             }
         }
         
         public async Task<IEnumerable<EventSourcingTableStorageEntity>> RetrieveHistoryAsync(string key)
         {
-            return await TableStorage.GetAllEntityHistory<EventSourcingTableStorageEntity>(key);
+            return await _tableStorage.GetAllEntityHistory<EventSourcingTableStorageEntity>(key);
         }
 
         public async Task<IEnumerable<EventSourcingTableStorageEntity>> RetrieveHistoryBeforeDateAsync(string partitionKey, DateTime date)
         {
-            return await TableStorage.GetEntityHistoryBeforeDate<EventSourcingTableStorageEntity>(partitionKey, date);
+            return await _tableStorage.GetEntityHistoryBeforeDate<EventSourcingTableStorageEntity>(partitionKey, date);
         }
 
         private async Task EventSourcingDeleteRecordAsync(TModel modelToDelete)
@@ -194,7 +228,7 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
             eventSourcingEntity.Json = model.ToJson();
             eventSourcingEntity.ETag = model.ETag;
 
-            var newEntity = await TableStorage.PersistAsync(eventSourcingEntity);
+            var newEntity = await _tableStorage.PersistAsync(eventSourcingEntity);
             return newEntity;
         }
         

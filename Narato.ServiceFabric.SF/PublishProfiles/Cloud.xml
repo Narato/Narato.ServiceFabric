@@ -20,7 +20,7 @@
                                     AzureActiveDirectory="true"
                                     ServerCertThumbprint="0123456789012345678901234567890123456789" />
   -->
-  <ClusterConnectionParameters ConnectionEndpoint="" />
+  <ClusterConnectionParameters ConnectionEndpoint="sfc-dashboard-dev.westeurope.cloudapp.azure.com:19000" AzureActiveDirectory="true" ServerCertThumbprint="E7BB041210180B93B3D623C9E3F61CFA09911F48" />
   <ApplicationParameterFile Path="..\ApplicationParameters\Cloud.xml" />
   <CopyPackageParameters CompressPackage="true" />
 </PublishProfile>
