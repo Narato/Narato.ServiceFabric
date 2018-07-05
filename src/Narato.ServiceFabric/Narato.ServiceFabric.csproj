@@ -1,28 +1,38 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
     <Authors>Narato</Authors>
     <Description>A library with core functionality for Service Fabric applications.</Description>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.6.4" />
     <PackageReference Include="Microsoft.ApplicationInsights.ServiceFabric.Native" Version="2.1.1-beta1" />
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.9.1" />
-    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.0.1.16" />
     <PackageReference Include="Microsoft.ServiceFabric" Version="6.2.274" />
-    <PackageReference Include="Microsoft.ServiceFabric.AspNetCore.Kestrel" Version="3.1.274" />
     <PackageReference Include="Microsoft.ServiceFabric.Data" Version="3.1.274" />
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.1.274" />
     <PackageReference Include="Microsoft.ServiceFabric.Services.Remoting" Version="3.1.274" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Fabric.MSBuild" Version="1.6.6" />
-    <PackageReference Include="Narato.JsonDiffPatch" Version="1.0.8" />
-    <PackageReference Include="Narato.ResponseMiddleware.Models" Version="2.0.3" />
-    <PackageReference Include="Narato.ResponseMiddleware.Models.Legacy" Version="2.0.1" />
-    <PackageReference Include="Narato.StringExtensions" Version="2.0.1" />
+    <PackageReference Include="Narato.JsonDiffPatch" Version="1.0.9-beta" />
+    <PackageReference Include="Narato.ResponseMiddleware.Models" Version="2.0.4-beta" />
+    <PackageReference Include="Narato.StringExtensions" Version="2.0.2-beta" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.2.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net46'">
+    <PackageReference Include="Microsoft.Azure.DocumentDB" Version="1.22.0" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.9.1" />
   </ItemGroup>
 </Project>

@@ -11,11 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LoadTest", "LoadTest", "{FE
 EndProject
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "Narato.ServiceFabric.SF", "Narato.ServiceFabric.SF\Narato.ServiceFabric.SF.sfproj", "{5104783F-5C44-4CA7-B5E9-3973561EBCCF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Narato.ServiceFabric.TestService", "Narato.ServiceFabric.TestService\Narato.ServiceFabric.TestService.csproj", "{A3C65471-F6E7-4E27-BA62-BD77833E4789}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Narato.ServiceFabric.TestService", "Narato.ServiceFabric.TestService\Narato.ServiceFabric.TestService.csproj", "{A3C65471-F6E7-4E27-BA62-BD77833E4789}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Narato.ServiceFabric.API", "Narato.ServiceFabric.API\Narato.ServiceFabric.API.csproj", "{3B1E90EE-F324-4C99-99F6-9F4BA09D840D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Narato.ServiceFabric.API", "Narato.ServiceFabric.API\Narato.ServiceFabric.API.csproj", "{3B1E90EE-F324-4C99-99F6-9F4BA09D840D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Narato.ServiceFabric.Contracts", "Narato.ServiceFabric.Contracts\Narato.ServiceFabric.Contracts.csproj", "{4BC6DAD4-C2B9-401A-BCA3-452576C66708}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Narato.ServiceFabric.Contracts", "Narato.ServiceFabric.Contracts\Narato.ServiceFabric.Contracts.csproj", "{4BC6DAD4-C2B9-401A-BCA3-452576C66708}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,7 +41,9 @@ Global
 		{CDB0E59E-2B48-4408-9144-865199A1E981}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CDB0E59E-2B48-4408-9144-865199A1E981}.Release|x64.ActiveCfg = Release|Any CPU
 		{CDB0E59E-2B48-4408-9144-865199A1E981}.Release|x64.Build.0 = Release|Any CPU
-		{5104783F-5C44-4CA7-B5E9-3973561EBCCF}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{5104783F-5C44-4CA7-B5E9-3973561EBCCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5104783F-5C44-4CA7-B5E9-3973561EBCCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5104783F-5C44-4CA7-B5E9-3973561EBCCF}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{5104783F-5C44-4CA7-B5E9-3973561EBCCF}.Debug|x64.ActiveCfg = Debug|x64
 		{5104783F-5C44-4CA7-B5E9-3973561EBCCF}.Debug|x64.Build.0 = Debug|x64
 		{5104783F-5C44-4CA7-B5E9-3973561EBCCF}.Debug|x64.Deploy.0 = Debug|x64

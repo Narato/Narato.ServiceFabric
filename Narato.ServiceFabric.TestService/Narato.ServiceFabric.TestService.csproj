@@ -11,6 +11,9 @@
     <PackageReference Include="Microsoft.ServiceFabric" Version="6.2.274" />
     <PackageReference Include="Microsoft.ServiceFabric.Data" Version="3.1.274" />
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.1.274" />
+    <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
+    <PackageReference Include="System.Net.Primitives" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
