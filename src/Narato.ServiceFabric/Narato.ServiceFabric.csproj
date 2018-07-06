@@ -1,7 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
-    <Authors>Narato</Authors>
+    <Authors>Narato - http://www.narato.be</Authors>
+    <PackageId>Narato.ServiceFabric</PackageId>
+    <PackageTags>Narato;ServiceFabric</PackageTags>
+    <PackageIconUrl>http://narato.be/wp-content/uploads/2016/11/narato-icon-logo-64x64-transparant.png</PackageIconUrl>
     <Description>A library with core functionality for Service Fabric applications.</Description>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
