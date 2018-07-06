@@ -22,6 +22,6 @@
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\Narato.ServiceFabric\Narato.ServiceFabric.csproj" />
+    <ProjectReference Include="..\..\src\Narato.ServiceFabric\Narato.ServiceFabric.csproj" />
   </ItemGroup>
 </Project>

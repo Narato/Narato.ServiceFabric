@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Narato.ServiceFabric\Narato.ServiceFabric.csproj" />
+    <ProjectReference Include="..\..\src\Narato.ServiceFabric\Narato.ServiceFabric.csproj" />
   </ItemGroup>
 
   <ItemGroup>
