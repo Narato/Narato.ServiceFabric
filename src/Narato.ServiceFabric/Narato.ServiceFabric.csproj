@@ -16,9 +16,9 @@
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.1.274" />
     <PackageReference Include="Microsoft.ServiceFabric.Services.Remoting" Version="3.1.274" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Fabric.MSBuild" Version="1.6.6" />
-    <PackageReference Include="Narato.JsonDiffPatch" Version="1.0.9-beta" />
-    <PackageReference Include="Narato.ResponseMiddleware.Models" Version="2.0.4-beta" />
-    <PackageReference Include="Narato.StringExtensions" Version="2.0.2-beta" />
+    <PackageReference Include="Narato.JsonDiffPatch" Version="1.0.0.1" />
+    <PackageReference Include="Narato.ResponseMiddleware.Models" Version="2.0.4" />
+    <PackageReference Include="Narato.StringExtensions" Version="2.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.2.0" />
   </ItemGroup>
