@@ -30,19 +30,21 @@ namespace Narato.ServiceFabric.Models
         [JsonProperty("statusChangedAt")]
         public DateTime StatusChangedAt { get; set; }
 
-        //public string Key => GetKey();
+        [DataMember]
+        [JsonProperty("eTag")]
+        public string ETag { get; set; }
+
+        [DataMember]
+        private string _key;
 
         protected virtual string GetKey()
         {
             return this._key;
         }
 
-        [DataMember]
-        private string _key;
-
         public string Key
         {
-            get { return GetKey(); }
+            get { return GetKey()?.ToLower(); }
             set { _key = value; }
         }
 
