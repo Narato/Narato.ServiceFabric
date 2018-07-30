@@ -15,8 +15,8 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
 {
     public class EventSourcedPersistenceProvider<TModel> : IPersistenceProvider<TModel>, IHistoryProvider where TModel : ModelBase, new()
     {
-        private readonly TableStorage.TableStorage _tableStorage;
-        private readonly DocDbDatabase _db;
+        protected readonly TableStorage.TableStorage _tableStorage;
+        protected readonly DocDbDatabase _db;
         private string _accountKey;
         private readonly SemaphoreSlim _persistMutex = new SemaphoreSlim(1,1);
         private readonly SemaphoreSlim _deleteMutex = new SemaphoreSlim(1,1);
