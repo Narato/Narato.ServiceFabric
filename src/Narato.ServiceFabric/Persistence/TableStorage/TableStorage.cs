@@ -84,5 +84,22 @@ namespace Narato.ServiceFabric.Persistence.TableStorage
 
             return returnResult;
         }
+
+        public async Task<T> GetLastEntityBeforeDate<T>(string partitionKey, DateTime date) where T : ITableEntity, new()
+        {
+            string partitionFilter = TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey);
+            string dateFilter = TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.LessThanOrEqual, new DateTimeOffset(date.ToUniversalTime()));
+
+            TableContinuationToken token = null;
+            TableQuery<T> query = new TableQuery<T>().Where(TableQuery.CombineFilters(partitionFilter, TableOperators.And, dateFilter));
+
+            var result = await _eventsTable.ExecuteQuerySegmentedAsync<T>(query, token);
+            var tmpResult = result.Results.ToList();
+
+            // Todo: move this filtering to the query, but this is not jet available as .NetStandard doesn't implement the required linq stuff
+            var lastEntry = tmpResult.OrderBy(r => r.Timestamp).FirstOrDefault();
+
+            return lastEntry;
+        }
     }
 }

@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Narato.ServiceFabric.Persistence.DocumentDb
 {
-    public class EventSourcedPersistenceProvider<TModel> : IPersistenceProvider<TModel>, IHistoryProvider where TModel : ModelBase, new()
+    public class EventSourcedPersistenceProvider<TModel> : IPersistenceProvider<TModel>, IEventSourcedPersistenceProvider<TModel>, IHistoryProvider where TModel : ModelBase, new()
     {
         protected readonly TableStorage.TableStorage _tableStorage;
         protected readonly DocDbDatabase _db;
@@ -85,6 +85,70 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
             {
                 _persistMutex.Release();
             }
+
+        }
+
+        public async Task<EventSourcingTableStorageEntity> PersistAndReturnEntityAsync(TModel model)
+        {
+            //waits untill the previous task has been finished (sort of like a lock but no 100% the same)
+            await _persistMutex.WaitAsync().ConfigureAwait(false);
+
+            EventSourcingTableStorageEntity returnEntity = new EventSourcingTableStorageEntity();
+
+            try
+            {
+                var persistedObject = RetrieveInternal(model.Key);
+
+                if (persistedObject == null)
+                {
+                    SetETag(model);
+
+                    await _db.CreateDocumentAsync(new PersistedModel<TModel>(model));
+
+                    //Try catch to handle transaction logic
+                    try
+                    {
+                        returnEntity = await EventSourcingCreateRecordAsync<EventSourcingTableStorageEntity>(null, model);
+                    }
+                    catch
+                    {
+                        //Revert the creation of the documentDb doc
+                        await DeleteAsync(model.Key, false);
+                        throw;
+                    }
+                }
+                else
+                {
+                    //When doing a patch, the last one wins since we are only updating a part of the object and probably do not have access to the etag.
+                    //To detect a patch operation, check the e-tag for a null value
+                    if (persistedObject.Current.ETag != null && persistedObject.Current.ETag != model.ETag)
+                        throw new Exception("The object has changed between your read action and this update request. We cannot continue with the save.");
+
+                    SetETag(model);
+
+                    //It's important that this happens before the persistedObject.Current is set to the updated model to get the diff...
+                    returnEntity = await EventSourcingCreateRecordAsync<EventSourcingTableStorageEntity>(persistedObject.Current, model);
+
+                    try
+                    {
+                        persistedObject.Current = model;
+                        await _db.UpdateDocumentAsync(persistedObject);
+                    }
+                    catch
+                    {
+                        //Revert the creation of the event sourcing record
+                        //var entityToDelete = await TableStorage.GetSingleEntity<ITableEntity>(newEventSourcingRecord.PartitionKey, newEventSourcingRecord.RowKey);
+                        await _tableStorage.DeleteAsync(returnEntity);
+                        throw;
+                    }
+                }
+            }
+            finally
+            {
+                _persistMutex.Release();
+            }
+
+            return returnEntity;
 
         }
 
@@ -184,6 +248,11 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
         public async Task<IEnumerable<EventSourcingTableStorageEntity>> RetrieveHistoryBeforeDateAsync(string partitionKey, DateTime date)
         {
             return await _tableStorage.GetEntityHistoryBeforeDate<EventSourcingTableStorageEntity>(partitionKey, date);
+        }
+
+        public async Task<EventSourcingTableStorageEntity> RetrieveLastEntryBeforeDateAsync(string partitionKey, DateTime date)
+        {
+            return await _tableStorage.GetLastEntityBeforeDate<EventSourcingTableStorageEntity>(partitionKey, date);
         }
 
         private async Task EventSourcingDeleteRecordAsync(TModel modelToDelete)
