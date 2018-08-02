@@ -196,11 +196,6 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
             return await _tableStorage.GetEntityHistoryBeforeDate<EventSourcingTableStorageEntity>(partitionKey, date);
         }
 
-        public async Task<EventSourcingTableStorageEntity> RetrieveLastEntryBeforeDateAsync(string partitionKey, DateTime date)
-        {
-            return await _tableStorage.GetLastEntityBeforeDate<EventSourcingTableStorageEntity>(partitionKey, date);
-        }
-
         public async Task<EventSourcingTableStorageEntity> RetrieveEntryByKeyAndRowkeyAsync(string partitionKey, string rowkey)
         {
             return await _tableStorage.GetSingleEntity<EventSourcingTableStorageEntity>(partitionKey, rowkey);
