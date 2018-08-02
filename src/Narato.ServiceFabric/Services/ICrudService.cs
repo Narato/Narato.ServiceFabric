@@ -8,10 +8,11 @@ namespace Narato.ServiceFabric.Services
     public interface ICrudService<TModel> : IService
         where TModel : ModelBase, new()
     {
-        Task<TModel> Create(TModel modelToCreate);
-        Task<TModel> Update(TModel modelToUpdate);
-        Task Delete(string id);
-        Task<TModel> Get(string id);
-        Task<IEnumerable<TModel>> GetAll();
+        Task<TModel> CreateAsync(TModel modelToCreate);
+        Task<TModel> UpdateAsync(TModel modelToUpdate);
+        Task DeleteAsync(string key);
+        Task<TModel> GetAsync(string key);
+        Task<List<TModel>> GetAllAsync(); // see https://github.com/Azure/service-fabric-issues/issues/735#issuecomment-384756849
+        // TODO: "In 6.3 , we are adding support for interface types also."
     }
 }

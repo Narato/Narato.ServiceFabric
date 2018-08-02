@@ -10,10 +10,10 @@ using Newtonsoft.Json;
 
 namespace Narato.ServiceFabric.Services
 {
-    public abstract class StatelessCrudServiceBase<TModel> : StatelessServiceBase
+    public class StatelessCrudServiceBase<TModel> : StatelessServiceBase
         where TModel : ModelBase, new()
     {
-        private readonly IPersistenceProvider<TModel> _provider;
+        protected readonly IPersistenceProvider<TModel> _provider;
         private readonly bool _softDeleteEnabled;
 
         protected StatelessCrudServiceBase(StatelessServiceContext serviceContext, IPersistenceProvider<TModel> provider, bool softDeleteEnabled) : base(serviceContext)
