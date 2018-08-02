@@ -255,6 +255,11 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
             return await _tableStorage.GetLastEntityBeforeDate<EventSourcingTableStorageEntity>(partitionKey, date);
         }
 
+        public async Task<EventSourcingTableStorageEntity> RetrieveEntryByKeyAndRowkeyAsync(string partitionKey, string rowkey)
+        {
+            return await _tableStorage.GetSingleEntity<EventSourcingTableStorageEntity>(partitionKey, rowkey);
+        }
+
         private async Task EventSourcingDeleteRecordAsync(TModel modelToDelete)
         {
             modelToDelete.EntityStatus = EntityStatus.Deleted;
