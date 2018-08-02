@@ -30,61 +30,7 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
 
         public async Task PersistAsync(TModel model)
         {
-            //waits untill the previous task has been finished (sort of like a lock but no 100% the same)
-            await _persistMutex.WaitAsync().ConfigureAwait(false);
-
-            try
-            {
-                var persistedObject = RetrieveInternal(model.Key);
-
-                if (persistedObject == null)
-                {
-                    SetETag(model);
-
-                    await _db.CreateDocumentAsync(new PersistedModel<TModel>(model));
-
-                    //Try catch to handle transaction logic
-                    try
-                    {
-                        await EventSourcingCreateRecordAsync<EventSourcingTableStorageEntity>(null, model);
-                    }
-                    catch
-                    {
-                        //Revert the creation of the documentDb doc
-                        await DeleteAsync(model.Key, false);
-                        throw;
-                    }
-                }
-                else
-                {
-                    //When doing a patch, the last one wins since we are only updating a part of the object and probably do not have access to the etag.
-                    //To detect a patch operation, check the e-tag for a null value
-                    if (persistedObject.Current.ETag != null && persistedObject.Current.ETag != model.ETag)
-                        throw new Exception("The object has changed between your read action and this update request. We cannot continue with the save.");
-
-                    SetETag(model);
-
-                    //It's important that this happens before the persistedObject.Current is set to the updated model to get the diff...
-                    var newEventSourcingRecord = await EventSourcingCreateRecordAsync<EventSourcingTableStorageEntity>(persistedObject.Current, model);
-
-                    try
-                    {
-                        persistedObject.Current = model;
-                        await _db.UpdateDocumentAsync(persistedObject);
-                    }
-                    catch
-                    {
-                        //Revert the creation of the event sourcing record
-                        //var entityToDelete = await TableStorage.GetSingleEntity<ITableEntity>(newEventSourcingRecord.PartitionKey, newEventSourcingRecord.RowKey);
-                        await _tableStorage.DeleteAsync(newEventSourcingRecord);
-                        throw;
-                    }
-                }
-            }
-            finally
-            {
-                _persistMutex.Release();
-            }
+            await PersistAndReturnEntityAsync(model);
 
         }
 
