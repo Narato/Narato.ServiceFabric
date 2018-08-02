@@ -29,10 +29,10 @@ namespace Narato.ServiceFabric.Persistence.TableStorage
             await _eventsTable.CreateIfNotExistsAsync();
         }
 
-        public async Task<ITableEntity> PersistAsync(TableEntity model)
+        public async Task<T> PersistAsync<T>(TableEntity model) where T : ITableEntity
         {
             //Only do inserts in the event sourcing table
-            return await CreateRecordAsync(model);
+            return await CreateRecordAsync<T>(model);
         }
 
         public async Task DeleteAsync(ITableEntity tableEntity)
@@ -41,12 +41,12 @@ namespace Narato.ServiceFabric.Persistence.TableStorage
             await _eventsTable.ExecuteAsync(deleteOperation);
         }
 
-        private async Task<ITableEntity> CreateRecordAsync(TableEntity entityToCreate)
+        private async Task<T> CreateRecordAsync<T>(TableEntity entityToCreate) where T : ITableEntity
         {
             entityToCreate.RowKey = Guid.NewGuid().ToString();
             TableOperation insertOperation = TableOperation.Insert(entityToCreate);
             var tableResult = await _eventsTable.ExecuteAsync(insertOperation);
-            return (ITableEntity)tableResult.Result;
+            return (T)tableResult.Result;
         }
 
         //PartitionKey and rowkey form the key
