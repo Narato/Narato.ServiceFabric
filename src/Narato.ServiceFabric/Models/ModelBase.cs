@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace Narato.ServiceFabric.Models
 {
     [DataContract]
-    public class ModelBase
+    public abstract class ModelBase
     {
         public ModelBase()
         {
@@ -35,17 +35,15 @@ namespace Narato.ServiceFabric.Models
         public string ETag { get; set; }
 
         [DataMember]
-        private string _key;
+        protected string _key; // protected so we can access it within GetKey
 
-        protected virtual string GetKey()
-        {
-            return this._key;
-        }
+        protected internal abstract string GetKey();
 
+        // basically we want to guarantee that the key in the database is the same as the key produced by GetKey
         public string Key
         {
-            get { return GetKey()?.ToLower(); }
-            set { _key = value; }
+            get { return _key; }
+            internal set { _key = value; } // internal so other assemblies can't call this directly
         }
 
     }

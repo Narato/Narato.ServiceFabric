@@ -33,7 +33,6 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         public async void InsertModel()
         {
             DummyModel dummy = new DummyModel();
-            dummy.Key = "Nieuw model";
             dummy.EntityStatus = EntityStatus.Active;
             dummy.Name = "New";
             dummy.Inner.InnerName = "newInner";

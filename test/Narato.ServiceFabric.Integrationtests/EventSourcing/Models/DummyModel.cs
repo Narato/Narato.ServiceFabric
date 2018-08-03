@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 using Narato.ServiceFabric.Models;
 using Newtonsoft.Json;
 
@@ -17,8 +18,11 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing.Models
         public DummyModel()
         {
             Inner = new InnerDummyModel();
-        }    
+        }
+
+        protected override string GetKey()
+        {
+            return string.IsNullOrEmpty(_key) ? Guid.NewGuid().ToString() : _key;
+        }
     }
-    
-    
 }
