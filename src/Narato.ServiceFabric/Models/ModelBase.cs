@@ -35,7 +35,7 @@ namespace Narato.ServiceFabric.Models
         public string ETag { get; set; }
 
         [DataMember]
-        protected string _key; // protected so we can access it withing GetKey
+        protected string _key; // protected so we can access it within GetKey
 
         protected internal abstract string GetKey();
 
