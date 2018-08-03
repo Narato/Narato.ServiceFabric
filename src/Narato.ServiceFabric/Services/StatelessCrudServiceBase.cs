@@ -7,6 +7,7 @@ using System.Fabric;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Narato.ResponseMiddleware.Models.Models;
 
 namespace Narato.ServiceFabric.Services
 {
@@ -24,6 +25,7 @@ namespace Narato.ServiceFabric.Services
 
         public virtual async Task<TModel> CreateAsync(TModel modelToCreate)
         {
+            modelToCreate.Key = modelToCreate.GetKey();
             TModel entity = null;
             
             entity = await _provider.RetrieveAsync(modelToCreate.Key);
@@ -42,6 +44,13 @@ namespace Narato.ServiceFabric.Services
 
             if (entity == null)
                 throw new EntityNotFoundException("ENF", $"Entity with key '{modelToUpdate.Key}' was not found.");
+
+            if (entity.Key != modelToUpdate.GetKey())
+            {
+                var modelDictionary = new ModelValidationDictionary<string>() { };
+                modelDictionary.Add("key", "Key is immutable.");
+                throw new ValidationException<string>(modelDictionary);
+            }
 
             modelToUpdate.Id = entity.Id;
 
