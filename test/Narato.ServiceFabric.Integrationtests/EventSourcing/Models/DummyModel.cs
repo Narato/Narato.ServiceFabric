@@ -20,7 +20,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing.Models
             Inner = new InnerDummyModel();
         }
 
-        protected override string GetKey()
+        protected override string CreateKey()
         {
             return Guid.NewGuid().ToString();
         }
