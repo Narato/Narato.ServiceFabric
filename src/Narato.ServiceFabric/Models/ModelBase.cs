@@ -37,7 +37,12 @@ namespace Narato.ServiceFabric.Models
         [DataMember]
         protected string _key; // protected so we can access it within GetKey
 
-        protected internal abstract string GetKey();
+        protected abstract string GetKey();
+
+        internal string InternalGetKey()
+        {
+            return string.IsNullOrEmpty(_key) ? GetKey() : _key;
+        }
 
         // basically we want to guarantee that the key in the database is the same as the key produced by GetKey
         public string Key

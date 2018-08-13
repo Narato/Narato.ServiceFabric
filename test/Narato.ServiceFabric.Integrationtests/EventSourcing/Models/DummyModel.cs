@@ -22,7 +22,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing.Models
 
         protected override string GetKey()
         {
-            return string.IsNullOrEmpty(_key) ? Guid.NewGuid().ToString() : _key;
+            return Guid.NewGuid().ToString();
         }
     }
 }
