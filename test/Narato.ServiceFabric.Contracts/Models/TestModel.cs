@@ -15,7 +15,7 @@ namespace Narato.ServiceFabric.Contracts.Models
 
         protected override string GetKey()
         {
-            return base.Id;
+            return Id;
         }
     }
 }
