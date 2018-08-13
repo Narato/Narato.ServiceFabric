@@ -13,7 +13,7 @@ namespace Narato.ServiceFabric.Contracts.Models
         [JsonProperty("dummyProp")]
         public string DummyProp { get; set; }
 
-        protected override string GetKey()
+        protected override string CreateKey()
         {
             return Id;
         }

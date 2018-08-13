@@ -25,7 +25,7 @@ namespace Narato.ServiceFabric.Services
 
         public virtual async Task<TModel> CreateAsync(TModel modelToCreate)
         {
-            modelToCreate.Key = modelToCreate.InternalGetKey();
+            modelToCreate.Key = modelToCreate.GetKey();
             TModel entity = null;
             
             entity = await _provider.RetrieveAsync(modelToCreate.Key);
@@ -45,7 +45,7 @@ namespace Narato.ServiceFabric.Services
             if (entity == null)
                 throw new EntityNotFoundException("ENF", $"Entity with key '{modelToUpdate.Key}' was not found.");
 
-            if (entity.Key != modelToUpdate.InternalGetKey())
+            if (entity.Key != modelToUpdate.GetKey())
             {
                 var modelDictionary = new ModelValidationDictionary<string>() { };
                 modelDictionary.Add("key", "Key is immutable.");
