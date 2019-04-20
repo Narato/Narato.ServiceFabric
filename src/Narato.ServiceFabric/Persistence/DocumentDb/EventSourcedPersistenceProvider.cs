@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JsonDiffPatch;
 using Microsoft.Azure.Documents.Client;
-using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Azure.Cosmos.Table;
 using Narato.ServiceFabric.Helpers;
 using Narato.ServiceFabric.Models;
 using Narato.StringExtensions;

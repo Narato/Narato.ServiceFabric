@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
-using Narato.ServiceFabric.Models;
+using Microsoft.Azure.Cosmos.Table;
+using CloudStorageAccount = Microsoft.Azure.Cosmos.Table.CloudStorageAccount;
 
 namespace Narato.ServiceFabric.Persistence.TableStorage
 {
@@ -17,6 +16,7 @@ namespace Narato.ServiceFabric.Persistence.TableStorage
         {
             TableName = tableName;
 
+            
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(cloudStorageConnectionString);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
             _eventsTable = tableClient.GetTableReference(TableName);

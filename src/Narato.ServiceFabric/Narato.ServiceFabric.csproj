@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
     <Authors>Narato - http://www.narato.be</Authors>
     <PackageId>Narato.ServiceFabric</PackageId>
     <PackageTags>Narato;ServiceFabric</PackageTags>
     <PackageIconUrl>http://narato.be/wp-content/uploads/2016/11/narato-icon-logo-64x64-transparant.png</PackageIconUrl>
     <Description>A library with core functionality for Service Fabric applications.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -14,6 +14,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.6.4" />
     <PackageReference Include="Microsoft.ApplicationInsights.ServiceFabric.Native" Version="2.1.1-beta1" />
+    <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.1" />
+    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Azure.Storage.Common" Version="10.0.1" />
     <PackageReference Include="Microsoft.ServiceFabric" Version="6.2.274" />
     <PackageReference Include="Microsoft.ServiceFabric.Data" Version="3.1.274" />
     <PackageReference Include="Microsoft.ServiceFabric.Services" Version="3.1.274" />
@@ -23,7 +26,7 @@
     <PackageReference Include="Narato.ResponseMiddleware.Models" Version="2.0.4" />
     <PackageReference Include="Narato.StringExtensions" Version="2.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="WindowsAzure.Storage" Version="9.2.0" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='net46'">
@@ -33,9 +36,5 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-  </ItemGroup>
-  
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.9.1" />
   </ItemGroup>
 </Project>

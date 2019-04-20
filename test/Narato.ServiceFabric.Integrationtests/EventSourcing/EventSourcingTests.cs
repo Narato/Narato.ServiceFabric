@@ -62,7 +62,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
         [Fact]
         public async void GetInitialModel()
         {      
-            var historyModel = await _service.GetHistoryBeforeOrOnDateAsync("Nieuw model", new DateTime(2018, 6, 13, 11, 48, 45));
+            var historyModel = await _service.GetHistoryBeforeOrOnDateAsync("nieuw model", new DateTime(2020, 6, 13, 11, 48, 45));
 
             Assert.NotEqual(null, historyModel);
         }
@@ -92,18 +92,20 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
 
         private static ServiceWrapper GetService(bool softdeleteEnabled = true)
         {
-            ServiceWrapper service =
-                new ServiceWrapper(
-                    MockStatelessServiceContextFactory.Default,
-                    new EventSourcedPersistenceProvider<DummyModel>("https://db-tt-nexus-dev.documents.azure.com:443/",
-                        "TiJJMqAdUQXh1SWw2Zfo8wBW0hpfq4ljQjSuJJrbbetOnCFZ9UMJGVgqzOf67Op23l1ZlPPvhclLEEDJ0BP5hQ==",
-                        "Models",
-                        "ServiceFabricTest",
-                        "DefaultEndpointsProtocol=https;AccountName=loadtestseventsourcing;AccountKey=2f/z5vxrHQM9DASJOfOtiFxngIEmbdJm/K+xAaI71nyysCSr9aMoDIVk/qV+SkEzKiuPf3UA7oXH6StYH0vjlw==;EndpointSuffix=core.windows.net",
-                        "eventsourcing",
-                        ""),
-                    softdeleteEnabled);
-            return service;
+
+                ServiceWrapper service =
+                    new ServiceWrapper(
+                        MockStatelessServiceContextFactory.Default,
+                        new EventSourcedPersistenceProvider<DummyModel>("https://event-sourcing-cosmosdb.documents.azure.com:443/",
+                            "vfhlLaNob8JxMSga0WZgx3MJwbu4U8E5F68pUX3msm0S7cvWyi0fTuK6DWS42PY0X7b7HnSt0hLvrKrmTehsiA==",
+                            "event-sourcing-demoDB",
+                            "dummyEvents",
+                            "DefaultEndpointsProtocol=https;AccountName=eventsdata;AccountKey=mqlEtLc2xaLG1jUm5dZNMBcG14YEjXB19qFOkHJLg6ywuqhvRPAo3gnJOoDfrdH8lVpoTjiY7PHROS7HjQC8kg==;TableEndpoint=https://eventsdata.table.cosmos.azure.com:443/;", 
+                            "events",
+                            ""),
+                        softdeleteEnabled);
+                return service;
+
         }
     }
 }

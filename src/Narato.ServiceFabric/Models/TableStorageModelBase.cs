@@ -1,7 +1,6 @@
-﻿using System;
-using System.Runtime.Serialization;
-using Microsoft.WindowsAzure.Storage.Table;
-using Newtonsoft.Json;
+﻿
+
+using Microsoft.Azure.Cosmos.Table;
 
 namespace Narato.ServiceFabric.Models
 {
