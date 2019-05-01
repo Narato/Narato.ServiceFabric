@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using JsonDiffPatch;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Azure.Documents;
 using Narato.ServiceFabric.Helpers;
 using Narato.ServiceFabric.Models;
 using Narato.StringExtensions;
@@ -133,7 +134,7 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
             try
             {
                 var document = RetrieveInternal(key);
-                await DocDbDatabase.Client.DeleteDocumentAsync(document.Self);
+                await DocDbDatabase.Client.DeleteDocumentAsync(document.Self, new RequestOptions{ PartitionKey = new PartitionKey(document.Key)});
 
                 if (withEventSourcing)
                 {
@@ -141,12 +142,16 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
                     await EventSourcingDeleteRecordAsync(document.Current);
                 }
             }
+            catch(Exception ex)
+            {
+                Console.Write(ex);
+            }
             finally
             {
                 _deleteMutex.Release();
             }
 
-            
+
         }
 
         public async Task DeleteAllAsync()

@@ -87,7 +87,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
             var history = await _service.GetHistoryAsync("nieuw model");
             
             Assert.True(history.Count() > 1);
-            await Assert.ThrowsAsync<EntityNotFoundException>(() =>  _service.GetAsync("Nieuw model"));
+            await Assert.ThrowsAsync<EntityNotFoundException>(() =>  _service.GetAsync("nieuw model"));
         }
 
         private static ServiceWrapper GetService(bool softdeleteEnabled = true)
