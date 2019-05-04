@@ -42,7 +42,7 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
 
         public async Task<IEnumerable<T>> RetrieveAllAsync()
         {
-            var queryOptions = new FeedOptions { MaxItemCount = -1 };
+            var queryOptions = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true };
 
             var result = DocDbDatabase.Client
                 .CreateDocumentQuery<PersistedModel<T>>(UriFactory.CreateDocumentCollectionUri(_db.DatabaseName,
@@ -56,7 +56,7 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
 
         private async Task<PersistedModel<T>> RetrieveInternalAsync(string key)
         {
-            var queryOptions = new FeedOptions { MaxItemCount = -1 };
+            var queryOptions = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true };
             var result = DocDbDatabase.Client
                 .CreateDocumentQuery<PersistedModel<T>>(UriFactory.CreateDocumentCollectionUri(_db.DatabaseName,
                     _db.CollectionName), queryOptions)
@@ -76,7 +76,7 @@ namespace Narato.ServiceFabric.Persistence.DocumentDb
 
         public async Task DeleteAllAsync()
         {
-            var queryOptions = new FeedOptions { MaxItemCount = -1 };
+            var queryOptions = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true };
             var result = DocDbDatabase.Client
                 .CreateDocumentQuery<PersistedModel<T>>(UriFactory.CreateDocumentCollectionUri(_db.DatabaseName,
                     _db.CollectionName), queryOptions)

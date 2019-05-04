@@ -9,7 +9,7 @@ namespace Narato.ServiceFabric.TestService
     /// <summary>
     /// An instance of this class is created for each service instance by the Service Fabric runtime.
     /// </summary>
-    internal sealed class TestService : StatelessCrudServiceBase<TestModel>, ITestService
+    internal sealed class TestService : StatelessCrudServiceBase<Ship>, IShipService
     {
         public TestService(StatelessServiceContext context, DocumentDbEventSourcingTestModelProvider provider, bool softDeleteEnabled)
             : base(context, provider, softDeleteEnabled)

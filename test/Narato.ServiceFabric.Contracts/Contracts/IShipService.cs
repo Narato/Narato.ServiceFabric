@@ -4,10 +4,10 @@ using Narato.ServiceFabric.Contracts.Models;
 
 namespace Narato.ServiceFabric.Contracts.Contracts
 {
-    public interface ITestService : IService
+    public interface IShipService : IService
     {
-        Task<TestModel> CreateAsync(TestModel model);
-        Task<TestModel> UpdateAsync(TestModel model);
+        Task<Ship> CreateAsync(Ship model);
+        Task<Ship> UpdateAsync(Ship model);
         Task DeleteAsync(string key);
     }
 }

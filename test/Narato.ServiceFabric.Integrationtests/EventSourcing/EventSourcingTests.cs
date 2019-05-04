@@ -99,7 +99,7 @@ namespace Narato.ServiceFabric.Integrationtests.EventSourcing
                         new EventSourcedPersistenceProvider<DummyModel>("https://event-sourcing-cosmosdb.documents.azure.com:443/",
                             "vfhlLaNob8JxMSga0WZgx3MJwbu4U8E5F68pUX3msm0S7cvWyi0fTuK6DWS42PY0X7b7HnSt0hLvrKrmTehsiA==",
                             "event-sourcing-demoDB",
-                            "dummyEvents",
+                            "Ships",
                             "DefaultEndpointsProtocol=https;AccountName=eventsdata;AccountKey=mqlEtLc2xaLG1jUm5dZNMBcG14YEjXB19qFOkHJLg6ywuqhvRPAo3gnJOoDfrdH8lVpoTjiY7PHROS7HjQC8kg==;TableEndpoint=https://eventsdata.table.cosmos.azure.com:443/;", 
                             "events",
                             ""),

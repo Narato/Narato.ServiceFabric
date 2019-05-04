@@ -4,14 +4,17 @@ using Newtonsoft.Json;
 
 namespace Narato.ServiceFabric.Contracts.Models
 {
-    public class TestModel : ModelBase
+    public class Ship : ModelBase
     {
         [DataMember]
-        [JsonProperty("testScenario")]
-        public string TestScenario { get; set; }
+        [JsonProperty("name")]
+        public string Name { get; set; }
         [DataMember]
-        [JsonProperty("dummyProp")]
-        public string DummyProp { get; set; }
+        [JsonProperty("location")]
+        public string Location { get; set; }
+        [DataMember]
+        [JsonProperty("cargoweight")]
+        public int CargoWeight { get; set; }
 
         protected override string GetKey()
         {
